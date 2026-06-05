@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lost MC — Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+  --black:#0a0a0a;--black2:#111;--dark:#181818;--dark2:#1e1e1e;--dark3:#242424;
+  --panel:#1a1a1a;--panel2:#202020;--border:#2a2a2a;--border2:#333;
+  --red:#c0392b;--red2:#e74c3c;--red3:#ff4444;--red-dark:#8b1a1a;--red-glow:rgba(192,57,43,.3);
+  --gold:#c9a227;--gold2:#f0c040;--silver:#8a9ba8;--silver2:#aab8c2;
+  --text:#e8e8e8;--text2:#b0b0b0;--text3:#707070;
+  --green:#27ae60;--green2:#2ecc71;--orange:#e67e22;--blue:#2980b9;
+  --font-title:'Bebas Neue',sans-serif;--font-heading:'Oswald',sans-serif;--font-body:'Rajdhani',sans-serif;
+  --sidebar-w:260px;--header-h:60px;--radius:4px;
+  --shadow:0 4px 20px rgba(0,0,0,.6);--transition:.2s ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--black);color:var(--text);min-height:100vh;overflow-x:hidden;line-height:1.5}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--dark)}
+::-webkit-scrollbar-thumb{background:var(--red-dark);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--red)}
+
+/* ── LOGIN ── */
+#login-page{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--black);position:relative;overflow:hidden}
+#login-page::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(192,57,43,.03) 60px,rgba(192,57,43,.03) 61px),repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(192,57,43,.03) 60px,rgba(192,57,43,.03) 61px)}
+#login-page::after{content:'LOST MC';position:absolute;font-family:var(--font-title);font-size:30vw;color:rgba(255,255,255,.012);letter-spacing:-10px;user-select:none;pointer-events:none;top:50%;left:50%;transform:translate(-50%,-50%)}
+.login-card{position:relative;z-index:10;background:var(--panel);border:1px solid var(--border2);border-top:3px solid var(--red);padding:50px 45px;width:420px;max-width:95vw;box-shadow:var(--shadow),0 0 60px rgba(192,57,43,.1)}
+.login-logo{text-align:center;margin-bottom:36px}
+.login-logo .skull{font-size:60px;display:block;margin-bottom:8px;filter:drop-shadow(0 0 10px rgba(192,57,43,.5))}
+.login-logo h1{font-family:var(--font-title);font-size:42px;letter-spacing:6px;color:var(--text);line-height:1}
+.login-logo p{font-family:var(--font-heading);font-size:11px;letter-spacing:4px;color:var(--red);text-transform:uppercase;margin-top:4px}
+.login-divider{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border2))}
+.login-divider::after{background:linear-gradient(90deg,var(--border2),transparent)}
+.login-divider span{font-family:var(--font-heading);font-size:10px;letter-spacing:3px;color:var(--text3);text-transform:uppercase}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-family:var(--font-heading);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--silver);margin-bottom:7px}
+.form-control{width:100%;background:var(--dark2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font-body);font-size:15px;padding:11px 15px;outline:none;transition:border-color var(--transition),box-shadow var(--transition)}
+.form-control:focus{border-color:var(--red);box-shadow:0 0 0 2px var(--red-glow)}
+.form-control::placeholder{color:var(--text3)}
+select.form-control option{background:var(--dark2)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 22px;font-family:var(--font-heading);font-size:14px;font-weight:600;letter-spacing:2px;text-transform:uppercase;border:none;border-radius:var(--radius);cursor:pointer;transition:all var(--transition);text-decoration:none;white-space:nowrap}
+.btn-primary{background:var(--red);color:white;width:100%;padding:13px;font-size:15px;letter-spacing:3px;margin-top:8px}
+.btn-primary:hover{background:var(--red2);box-shadow:0 4px 20px var(--red-glow)}
+.btn-secondary{background:var(--dark3);color:var(--text2);border:1px solid var(--border2)}
+.btn-secondary:hover{background:var(--border2);color:var(--text)}
+.btn-success{background:var(--green);color:white}
+.btn-success:hover{background:var(--green2)}
+.btn-danger{background:var(--red-dark);color:white;border:1px solid var(--red)}
+.btn-danger:hover{background:var(--red)}
+.btn-gold{background:var(--gold);color:var(--black);font-weight:700}
+.btn-gold:hover{background:var(--gold2)}
+.btn-sm{padding:6px 14px;font-size:11px}
+.btn-xs{padding:4px 10px;font-size:10px}
+.login-error{background:rgba(192,57,43,.15);border:1px solid var(--red-dark);color:var(--red2);padding:10px 14px;border-radius:var(--radius);font-size:13px;margin-top:14px;display:none;font-family:var(--font-heading)}
+
+/* ── APP ── */
+#app{display:none;flex-direction:column;min-height:100vh}
+.app-header{position:fixed;top:0;left:0;right:0;height:var(--header-h);background:var(--black2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;z-index:1000;gap:16px}
+.header-brand{display:flex;align-items:center;gap:12px;min-width:var(--sidebar-w)}
+.header-brand .logo-text{font-family:var(--font-title);font-size:26px;letter-spacing:4px;color:var(--text);line-height:1}
+.header-brand .logo-sub{font-family:var(--font-heading);font-size:9px;letter-spacing:3px;color:var(--red);text-transform:uppercase}
+.header-brand .logo-skull{font-size:28px;filter:drop-shadow(0 0 6px rgba(192,57,43,.5))}
+.header-right{display:flex;align-items:center;gap:12px;margin-left:auto}
+.header-user{display:flex;align-items:center;gap:10px;background:var(--dark2);border:1px solid var(--border);padding:6px 14px;border-radius:var(--radius);font-family:var(--font-heading);font-size:13px;letter-spacing:1px}
+.header-user .grade-badge{font-size:10px;color:var(--gold);letter-spacing:2px;text-transform:uppercase}
+.header-clock{font-family:var(--font-heading);font-size:14px;color:var(--text2);letter-spacing:2px;background:var(--dark2);padding:6px 14px;border-radius:var(--radius);border:1px solid var(--border)}
+.autosave-indicator{font-family:var(--font-heading);font-size:10px;letter-spacing:2px;color:var(--green2);opacity:0;transition:opacity .5s;text-transform:uppercase}
+.autosave-indicator.show{opacity:1}
+.btn-logout{background:transparent;border:1px solid var(--border2);color:var(--text3);padding:6px 14px;font-family:var(--font-heading);font-size:12px;letter-spacing:2px;border-radius:var(--radius);cursor:pointer;transition:all var(--transition);text-transform:uppercase}
+.btn-logout:hover{border-color:var(--red);color:var(--red2)}
+
+/* ── SIDEBAR ── */
+.app-sidebar{position:fixed;top:var(--header-h);left:0;width:var(--sidebar-w);bottom:0;background:var(--black2);border-right:1px solid var(--border);overflow-y:auto;overflow-x:hidden;z-index:900;padding:12px 0 30px}
+.nav-section-title{font-family:var(--font-heading);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);padding:12px 20px 6px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 20px;cursor:pointer;transition:all var(--transition);border-left:3px solid transparent;font-family:var(--font-heading);font-size:14px;letter-spacing:1px;color:var(--text2);text-transform:uppercase}
+.nav-item:hover{background:var(--dark2);color:var(--text);border-left-color:var(--border2)}
+.nav-item.active{background:rgba(192,57,43,.1);color:var(--red2);border-left-color:var(--red)}
+.nav-item.locked{opacity:.4;cursor:not-allowed}
+.nav-item .nav-icon{width:18px;text-align:center;font-size:16px}
+.treasurer-badge{font-size:9px;letter-spacing:1px;background:var(--gold);color:var(--black);padding:2px 5px;border-radius:2px;margin-left:auto;font-weight:700}
+
+/* ── MAIN ── */
+.app-main{margin-left:var(--sidebar-w);margin-top:var(--header-h);padding:24px;min-height:calc(100vh - var(--header-h));flex:1}
+.page{display:none}
+.page.active{display:block}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.page-title{font-family:var(--font-title);font-size:34px;letter-spacing:4px;color:var(--text);line-height:1}
+.page-title span{color:var(--red)}
+.page-subtitle{font-family:var(--font-heading);font-size:11px;letter-spacing:3px;color:var(--text3);text-transform:uppercase;margin-top:2px}
+
+/* ── PANELS ── */
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.panel-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--panel2)}
+.panel-title{font-family:var(--font-heading);font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--text2)}
+.panel-body{padding:18px}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden;transition:transform var(--transition),box-shadow var(--transition)}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat-card.red::before{background:var(--red)}
+.stat-card.gold::before{background:var(--gold)}
+.stat-card.green::before{background:var(--green)}
+.stat-card.blue::before{background:var(--blue)}
+.stat-card.silver::before{background:var(--silver)}
+.stat-card.orange::before{background:var(--orange)}
+.stat-label{font-family:var(--font-heading);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.stat-value{font-family:var(--font-title);font-size:32px;letter-spacing:2px;color:var(--text);line-height:1}
+.stat-icon{position:absolute;right:14px;top:16px;font-size:24px;opacity:.15}
+.stat-change{font-family:var(--font-heading);font-size:11px;margin-top:6px;color:var(--text3)}
+.stat-change.up{color:var(--green2)}
+.stat-change.down{color:var(--red2)}
+
+/* ── GRIDS ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-auto{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+
+/* ── TABLES ── */
+.table-wrapper{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-family:var(--font-body);font-size:14px}
+thead tr{background:var(--dark2);border-bottom:2px solid var(--border2)}
+thead th{padding:11px 14px;text-align:left;font-family:var(--font-heading);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);font-weight:600;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background var(--transition)}
+tbody tr:hover{background:var(--dark2)}
+tbody tr:last-child{border-bottom:none}
+td{padding:10px 14px;color:var(--text2);vertical-align:middle}
+.td-mono{font-family:'Courier New',monospace;font-size:12px;color:var(--silver)}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:2px;font-family:var(--font-heading);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;white-space:nowrap}
+.badge-green{background:rgba(39,174,96,.15);color:var(--green2);border:1px solid rgba(39,174,96,.3)}
+.badge-red{background:rgba(192,57,43,.15);color:var(--red2);border:1px solid rgba(192,57,43,.3)}
+.badge-gold{background:rgba(201,162,39,.15);color:var(--gold2);border:1px solid rgba(201,162,39,.3)}
+.badge-silver{background:rgba(138,155,168,.15);color:var(--silver2);border:1px solid rgba(138,155,168,.3)}
+.badge-blue{background:rgba(41,128,185,.15);color:#5dade2;border:1px solid rgba(41,128,185,.3)}
+.badge-orange{background:rgba(230,126,34,.15);color:#f0a500;border:1px solid rgba(230,126,34,.3)}
+
+/* ── PROGRESS ── */
+.progress-wrap{background:var(--dark2);border-radius:2px;height:6px;overflow:hidden;width:100%}
+.progress-bar{height:100%;border-radius:2px;transition:width .4s ease;background:var(--red)}
+.progress-bar.green{background:var(--green)}
+.progress-bar.gold{background:var(--gold)}
+.progress-bar.orange{background:var(--orange)}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2000;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border2);border-top:3px solid var(--red);border-radius:var(--radius);width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.8)}
+.modal-lg{width:780px}
+.modal-sm{width:400px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--panel2)}
+.modal-title{font-family:var(--font-heading);font-size:15px;letter-spacing:2px;text-transform:uppercase;color:var(--text)}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;line-height:1;padding:0;transition:color var(--transition)}
+.modal-close:hover{color:var(--red2)}
+.modal-body{padding:20px}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--border);background:var(--panel2)}
+
+/* ── FORMS ── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.form-label{display:block;font-family:var(--font-heading);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--silver);margin-bottom:6px}
+textarea.form-control{resize:vertical;min-height:80px}
+
+/* ── TOAST ── */
+.toast-container{position:fixed;top:70px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--panel2);border:1px solid var(--border2);padding:12px 18px;border-radius:var(--radius);font-family:var(--font-heading);font-size:13px;letter-spacing:1px;box-shadow:var(--shadow);animation:slideIn .3s ease;max-width:320px}
+.toast.success{border-left:3px solid var(--green)}
+.toast.error{border-left:3px solid var(--red)}
+.toast.warning{border-left:3px solid var(--orange)}
+.toast.info{border-left:3px solid var(--blue)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.filter-bar .form-control{flex:1;min-width:180px;max-width:300px}
+
+/* ── FACTURES ACHAT/VENTE ── */
+.fav-tabs{display:flex;gap:0;margin-bottom:20px;border:1px solid var(--border2);border-radius:var(--radius);overflow:hidden}
+.fav-tab{flex:1;padding:10px;font-family:var(--font-heading);font-size:13px;letter-spacing:2px;text-transform:uppercase;text-align:center;cursor:pointer;background:var(--dark2);color:var(--text3);transition:all var(--transition);border:none}
+.fav-tab.active{background:var(--red);color:white}
+.fav-tab:hover:not(.active){background:var(--dark3);color:var(--text2)}
+
+/* ── QUOTA CARD ── */
+.quota-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px}
+.quota-member{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.quota-stats{display:flex;gap:12px;margin-bottom:8px;font-family:var(--font-heading);font-size:11px;color:var(--text3);letter-spacing:1px}
+.quota-stats span{color:var(--text);font-weight:600}
+
+/* ── MEMBER AVATAR ── */
+.member-avatar{width:36px;height:36px;border-radius:50%;background:var(--dark3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+
+/* ── BUDGET ── */
+.budget-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.budget-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.budget-name{font-family:var(--font-heading);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.budget-amount{font-family:var(--font-title);font-size:26px;letter-spacing:2px;color:var(--text);margin-bottom:4px}
+.budget-used{font-family:var(--font-heading);font-size:11px;color:var(--text3);margin-bottom:10px}
+
+/* ── LOGS ── */
+.log-entry{display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);font-family:var(--font-body);font-size:13px}
+.log-entry:last-child{border-bottom:none}
+.log-time{font-family:'Courier New',monospace;font-size:11px;color:var(--text3);white-space:nowrap;min-width:150px}
+.log-action{color:var(--gold2);font-weight:600}
+.log-user{color:var(--silver2)}
+.log-detail{color:var(--text2);flex:1}
+
+/* ── PERMISSIONS ── */
+.perm-label{font-family:var(--font-heading);font-size:13px;color:var(--text2);letter-spacing:1px}
+.toggle-switch{position:relative;width:40px;height:20px}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--dark3);border-radius:20px;cursor:pointer;transition:background var(--transition);border:1px solid var(--border2)}
+.toggle-slider::before{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:var(--text3);left:3px;top:2px;transition:all var(--transition)}
+.toggle-switch input:checked+.toggle-slider{background:rgba(192,57,43,.3);border-color:var(--red)}
+.toggle-switch input:checked+.toggle-slider::before{transform:translateX(18px);background:var(--red)}
+
+/* ── MISC ── */
+.text-red{color:var(--red2)}.text-gold{color:var(--gold2)}.text-green{color:var(--green2)}
+.text-silver{color:var(--silver2)}.text-muted{color:var(--text3)}
+.mt-1{margin-top:8px}.mt-2{margin-top:16px}.mt-3{margin-top:24px}
+.mb-1{margin-bottom:8px}.mb-2{margin-bottom:16px}.mb-3{margin-bottom:24px}
+.flex{display:flex}.flex-center{display:flex;align-items:center;justify-content:center}
+.flex-between{display:flex;align-items:center;justify-content:space-between}
+.hidden{display:none!important}.w-100{width:100%}
+hr.sep{border:none;border-top:1px solid var(--border);margin:16px 0}
+.empty-state{text-align:center;padding:50px 20px;color:var(--text3);font-family:var(--font-heading);letter-spacing:2px;text-transform:uppercase;font-size:13px}
+.empty-state .empty-icon{font-size:40px;margin-bottom:12px;opacity:.4}
+.amount-in{color:var(--green2)}.amount-out{color:var(--red2)}
+.dash-chart-wrap{height:260px;position:relative}
+.alert-list{display:flex;flex-direction:column;gap:8px}
+.alert-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--dark2);border-radius:var(--radius);border-left:3px solid var(--red);font-family:var(--font-heading);font-size:13px;color:var(--text2)}
+
+/* ── CHANGE PASSWORD PANEL ── */
+.change-pass-panel{background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.3);border-radius:var(--radius);padding:20px;margin-top:20px}
+.change-pass-panel h3{font-family:var(--font-heading);font-size:14px;letter-spacing:3px;text-transform:uppercase;color:var(--gold2);margin-bottom:16px}
+
+/* ── LOCKED PAGE ── */
+.lock-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center}
+.lock-screen .lock-icon{font-size:60px;margin-bottom:20px;opacity:.3}
+.lock-screen h2{font-family:var(--font-title);font-size:28px;letter-spacing:4px;color:var(--text3);margin-bottom:8px}
+.lock-screen p{font-family:var(--font-heading);font-size:12px;letter-spacing:2px;color:var(--text3);text-transform:uppercase}
+
+/* ── PROFIT BADGE ── */
+.profit-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:2px;font-family:var(--font-heading);font-size:10px;font-weight:700;letter-spacing:1px}
+.profit-pos{background:rgba(39,174,96,.2);color:var(--green2);border:1px solid rgba(39,174,96,.4)}
+.profit-neg{background:rgba(192,57,43,.2);color:var(--red2);border:1px solid rgba(192,57,43,.4)}
+
+@media(max-width:900px){
+  :root{--sidebar-w:0px}
+  .app-sidebar{transform:translateX(-260px);width:260px;transition:transform .3s ease}
+  .app-sidebar.open{transform:translateX(0);width:260px}
+  .app-main{margin-left:0}
+  .grid-2{grid-template-columns:1fr}
+  .grid-3{grid-template-columns:1fr 1fr}
+  .form-row{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .app-main{padding:14px}
+  .grid-3{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .page-title{font-size:26px}
+  .header-clock{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="skull">💀</span>
+      <h1>LOST MC</h1>
+      <p>Management System — GTA RP</p>
+    </div>
+    <div class="login-divider"><span>Accès Club</span></div>
+    <div class="form-group">
+      <label>Nom d'utilisateur</label>
+      <input type="text" id="login-user" class="form-control" placeholder="Votre nom RP..." autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>Mot de passe</label>
+      <input type="password" id="login-pass" class="form-control" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary" onclick="doLogin()">🔓 CONNEXION</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="app-header">
+    <div class="header-brand">
+      <span class="logo-skull">💀</span>
+      <div><div class="logo-text">LOST MC</div><div class="logo-sub">Management System</div></div>
+    </div>
+    <div class="header-right">
+      <span class="autosave-indicator" id="autosave-ind">💾 SAUVEGARDÉ</span>
+      <div class="header-clock" id="header-clock">00:00:00</div>
+      <div class="header-user">
+        <div><div id="hdr-name">—</div><div class="grade-badge" id="hdr-grade">—</div></div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">⏻ Déco.</button>
+    </div>
+  </header>
+
+  <aside class="app-sidebar" id="sidebar">
+    <div class="nav-section-title">Navigation</div>
+    <div class="nav-item active" data-page="dashboard" onclick="nav(this)"><span class="nav-icon">📊</span> Tableau de bord</div>
+    <div class="nav-item" data-page="membres" onclick="nav(this)"><span class="nav-icon">👥</span> Membres</div>
+    <div class="nav-item" data-page="grades" onclick="nav(this)"><span class="nav-icon">🎖️</span> Grades & Perms</div>
+    <div class="nav-item" data-page="quotas" onclick="nav(this)"><span class="nav-icon">📦</span> Quotas</div>
+    <div class="nav-section-title">Finance <span style="font-size:8px;color:var(--gold);letter-spacing:1px">(Trésorier+)</span></div>
+    <div class="nav-item" data-page="tresorerie" onclick="navFinance(this)"><span class="nav-icon">💰</span> Trésorerie <span class="treasurer-badge">🔒</span></div>
+    <div class="nav-item" data-page="factures-av" onclick="navFinance(this)"><span class="nav-icon">🧾</span> Achats / Ventes <span class="treasurer-badge">🔒</span></div>
+    <div class="nav-item" data-page="budgets" onclick="navFinance(this)"><span class="nav-icon">📋</span> Budgets <span class="treasurer-badge">🔒</span></div>
+    <div class="nav-item" data-page="cotisations" onclick="navFinance(this)"><span class="nav-icon">💳</span> Cotisations <span class="treasurer-badge">🔒</span></div>
+    <div class="nav-section-title">Admin</div>
+    <div class="nav-item" data-page="logs" onclick="nav(this)"><span class="nav-icon">📝</span> Journal</div>
+    <div class="nav-item" data-page="parametres" onclick="nav(this)"><span class="nav-icon">⚙️</span> Paramètres</div>
+  </aside>
+
+  <main class="app-main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div><div class="page-title">TABLEAU DE <span>BORD</span></div><div class="page-subtitle">Vue d'ensemble du club</div></div>
+        <button class="btn btn-secondary" onclick="exportAllExcel()">📊 Export Excel Global</button>
+      </div>
+      <div class="stats-grid" id="dash-stats"></div>
+      <div class="grid-2 mb-2">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">💰 Transactions récentes</span></div>
+          <div class="panel-body"><div id="dash-transactions"></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">⚠️ Alertes</span></div>
+          <div class="panel-body"><div id="dash-alerts" class="alert-list"></div></div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">📊 Trésorerie — 6 mois</span></div>
+          <div class="panel-body"><div class="dash-chart-wrap"><canvas id="chart-treasury"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">📦 Quotas semaine</span></div>
+          <div class="panel-body"><div class="dash-chart-wrap"><canvas id="chart-quotas"></canvas></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMBRES -->
+    <div class="page" id="page-membres">
+      <div class="page-header">
+        <div><div class="page-title">GESTION DES <span>MEMBRES</span></div><div class="page-subtitle" id="membres-count">—</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary" onclick="exportMembresExcel()">📊 Excel</button>
+          <button class="btn btn-primary" onclick="openMemberModal()">+ Ajouter</button>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <input type="text" class="form-control" placeholder="🔍 Rechercher..." id="search-membres" oninput="renderMembres()">
+        <select class="form-control" id="filter-grade" onchange="renderMembres()" style="max-width:200px"><option value="">Tous les grades</option></select>
+        <select class="form-control" id="filter-statut" onchange="renderMembres()" style="max-width:160px">
+          <option value="">Tous statuts</option><option value="actif">Actif</option><option value="inactif">Inactif</option>
+        </select>
+      </div>
+      <div class="panel">
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Membre</th><th>Grade</th><th>Statut</th><th>Entrée</th><th>Quota sem.</th><th>Actions</th></tr></thead>
+            <tbody id="tbody-membres"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRADES -->
+    <div class="page" id="page-grades">
+      <div class="page-header">
+        <div><div class="page-title">GRADES & <span>PERMISSIONS</span></div><div class="page-subtitle">Gestion de la hiérarchie</div></div>
+        <button class="btn btn-primary" onclick="openGradeModal()">+ Nouveau grade</button>
+      </div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Liste des grades</span></div>
+          <div class="panel-body" style="padding:0"><div id="grades-list"></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title" id="grade-perm-title">Sélectionner un grade</span></div>
+          <div class="panel-body" id="grade-perm-body">
+            <div class="empty-state"><div class="empty-icon">🎖️</div>Cliquez sur un grade</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUOTAS -->
+    <div class="page" id="page-quotas">
+      <div class="page-header">
+        <div><div class="page-title">GESTION DES <span>QUOTAS</span></div><div class="page-subtitle">Matériaux — Semaine en cours</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary" onclick="exportQuotasExcel()">📊 Excel</button>
+          <button class="btn btn-primary" onclick="openQuotaModal()">+ Enregistrer livraison</button>
+        </div>
+      </div>
+      <div class="stats-grid" id="quota-stats"></div>
+      <div class="grid-2 mb-2">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">📊 Progression</span>
+            <select class="form-control" id="quota-week-filter" onchange="renderQuotas()" style="max-width:160px;padding:4px 8px;font-size:12px">
+              <option value="current">Semaine en cours</option><option value="last">Semaine dernière</option><option value="all">Tout</option>
+            </select>
+          </div>
+          <div class="panel-body" id="quota-progress-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">📋 Livraisons récentes</span></div>
+          <div class="panel-body" style="padding:0">
+            <div class="table-wrapper">
+              <table>
+                <thead><tr><th>Membre</th><th>Type</th><th>Qté</th><th>Date</th><th>Statut</th><th></th></tr></thead>
+                <tbody id="tbody-quotas"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRÉSORERIE -->
+    <div class="page" id="page-tresorerie">
+      <div class="page-header">
+        <div><div class="page-title">TRÉS<span>ORERIE</span></div><div class="page-subtitle">Gestion financière du club</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary" onclick="exportTresoExcel()">📊 Excel</button>
+          <button class="btn btn-primary" onclick="openTransactionModal()">+ Nouvelle transaction</button>
+        </div>
+      </div>
+      <div class="stats-grid" id="treasury-stats"></div>
+      <div class="filter-bar">
+        <input type="text" class="form-control" placeholder="🔍 Rechercher..." id="search-treso" oninput="renderTresorerie()">
+        <select class="form-control" id="filter-treso-type" onchange="renderTresorerie()" style="max-width:160px">
+          <option value="">Tous types</option><option value="entree">Entrée</option><option value="sortie">Sortie</option>
+        </select>
+        <select class="form-control" id="filter-treso-cat" onchange="renderTresorerie()" style="max-width:180px"><option value="">Toutes catégories</option></select>
+      </div>
+      <div class="panel">
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>N°</th><th>Date</th><th>Type</th><th>Catégorie</th><th>Description</th><th>Montant</th><th>Auteur</th><th>Actions</th></tr></thead>
+            <tbody id="tbody-treso"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACHATS / VENTES -->
+    <div class="page" id="page-factures-av">
+      <div class="page-header">
+        <div><div class="page-title">ACHATS / <span>VENTES</span></div><div class="page-subtitle">Facturation avec calcul de bénéfice automatique</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary" onclick="exportFacturesExcel()">📊 Excel</button>
+          <button class="btn btn-primary" id="btn-new-fav" onclick="openFactureAVModal()">+ Nouvelle entrée</button>
+        </div>
+      </div>
+
+      <!-- Résumé bénéfice -->
+      <div class="stats-grid" id="fav-stats"></div>
+
+      <div class="fav-tabs">
+        <button class="fav-tab active" onclick="switchFavTab('all',this)">📋 Tout</button>
+        <button class="fav-tab" onclick="switchFavTab('achat',this)">🛒 Achats</button>
+        <button class="fav-tab" onclick="switchFavTab('vente',this)">💸 Ventes</button>
+      </div>
+
+      <div class="filter-bar">
+        <input type="text" class="form-control" placeholder="🔍 Rechercher..." id="search-fav" oninput="renderFacturesAV()">
+        <select class="form-control" id="filter-fav-statut" onchange="renderFacturesAV()" style="max-width:160px">
+          <option value="">Tous statuts</option><option value="paye">Payée</option><option value="non-paye">En attente</option>
+        </select>
+      </div>
+
+      <div class="panel">
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>N°</th><th>Type</th><th>Date</th><th>Article</th><th>Catégorie</th><th>P. revient</th><th>P. vente</th><th>Bénéfice</th><th>Statut</th><th>Actions</th></tr></thead>
+            <tbody id="tbody-fav"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUDGETS -->
+    <div class="page" id="page-budgets">
+      <div class="page-header">
+        <div><div class="page-title">GEST. DES <span>BUDGETS</span></div><div class="page-subtitle">Enveloppes budgétaires</div></div>
+        <button class="btn btn-primary" onclick="openBudgetModal()">+ Nouveau budget</button>
+      </div>
+      <div class="budget-grid" id="budgets-grid"></div>
+    </div>
+
+    <!-- COTISATIONS -->
+    <div class="page" id="page-cotisations">
+      <div class="page-header">
+        <div><div class="page-title">COTIS<span>ATIONS</span></div><div class="page-subtitle">Gestion des cotisations membres</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary" onclick="exportCotisExcel()">📊 Excel</button>
+          <button class="btn btn-primary" onclick="openCotisationModal()">+ Enregistrer cotisation</button>
+        </div>
+      </div>
+      <div class="stats-grid" id="cotis-stats"></div>
+      <div class="panel">
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Membre</th><th>Montant</th><th>Date</th><th>Statut</th><th>Notes</th><th>Actions</th></tr></thead>
+            <tbody id="tbody-cotisations"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGS -->
+    <div class="page" id="page-logs">
+      <div class="page-header">
+        <div><div class="page-title">JOURNAL DES <span>ACTIONS</span></div><div class="page-subtitle">Traçabilité complète</div></div>
+        <button class="btn btn-secondary" onclick="clearLogs()">🗑️ Vider</button>
+      </div>
+      <div class="filter-bar">
+        <input type="text" class="form-control" placeholder="🔍 Rechercher..." id="search-logs" oninput="renderLogs()">
+      </div>
+      <div class="panel"><div class="panel-body" id="logs-list"></div></div>
+    </div>
+
+    <!-- PARAMÈTRES -->
+    <div class="page" id="page-parametres">
+      <div class="page-header">
+        <div><div class="page-title">PARAM<span>ÈTRES</span></div><div class="page-subtitle">Administration du système</div></div>
+      </div>
+      <div class="grid-2 mb-2">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">⚙️ Paramètres du club</span></div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="form-label">Nom du club</label>
+              <input type="text" class="form-control" id="param-club-name" value="Lost MC">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Quota hebdomadaire minimum</label>
+              <input type="number" class="form-control" id="param-quota-min" value="100">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Montant cotisation mensuelle ($)</label>
+              <input type="number" class="form-control" id="param-cotis-amount" value="5000">
+            </div>
+            <button class="btn btn-primary" onclick="saveParams()">💾 Sauvegarder</button>
+
+            <!-- CHANGEMENT DE MOT DE PASSE — code 2008 -->
+            <div class="change-pass-panel" id="change-pass-section" style="display:none">
+              <h3>🔑 Changer le mot de passe</h3>
+              <div class="form-group">
+                <label class="form-label">Nouveau mot de passe</label>
+                <input type="password" class="form-control" id="new-pass-1" placeholder="Nouveau mot de passe...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirmer le mot de passe</label>
+                <input type="password" class="form-control" id="new-pass-2" placeholder="Confirmer...">
+              </div>
+              <button class="btn btn-gold w-100" onclick="changePassword()">🔑 Changer le mot de passe</button>
+            </div>
+
+            <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+              <label class="form-label">Code d'accès changement de mot de passe</label>
+              <div style="display:flex;gap:8px">
+                <input type="password" class="form-control" id="unlock-code" placeholder="Entrez le code secret..." style="flex:1">
+                <button class="btn btn-secondary" onclick="unlockPasswordChange()" style="white-space:nowrap">🔓 Débloquer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">💾 Sauvegarde & Données</span></div>
+          <div class="panel-body">
+            <p style="font-family:var(--font-heading);font-size:13px;color:var(--text2);margin-bottom:16px;letter-spacing:1px">Sauvegarde automatique toutes les 2 minutes</p>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <button class="btn btn-secondary w-100" onclick="exportData()">📤 Exporter les données (JSON)</button>
+              <label class="btn btn-secondary w-100" style="cursor:pointer">📥 Importer des données (JSON)<input type="file" accept=".json" style="display:none" onchange="importData(this)"></label>
+              <button class="btn btn-secondary w-100" onclick="exportAllExcel()">📊 Exporter tout en Excel</button>
+              <button class="btn btn-danger w-100" onclick="confirmAction('Réinitialiser toute la base de données ?',resetDB)">🗑️ Réinitialiser la base</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMPTES UTILISATEURS -->
+      <div class="panel mb-2">
+        <div class="panel-header">
+          <span class="panel-title">🔑 Comptes utilisateurs</span>
+          <button class="btn btn-secondary btn-sm" onclick="openCreateUserModal()">+ Créer un compte</button>
+        </div>
+        <div class="panel-body" style="padding:0">
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Grade</th><th>Login</th><th>Mot de passe</th><th>Catégorie</th><th>Dernière connexion</th><th>Actions</th></tr></thead>
+              <tbody id="tbody-users"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">ℹ️ Informations système</span></div>
+        <div class="panel-body" id="sys-info"></div>
+      </div>
+    </div>
+
+    <!-- PAGE ACCÈS REFUSÉ FINANCE -->
+    <div class="page" id="page-finance-locked">
+      <div class="lock-screen">
+        <div class="lock-icon">🔒</div>
+        <h2>ACCÈS RESTREINT</h2>
+        <p>Cette section est réservée au Trésorier et aux hauts gradés</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-member">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title" id="modal-member-title">Ajouter un membre</div><button class="modal-close" onclick="closeModal('modal-member')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="m-id">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nom RP *</label><input type="text" class="form-control" id="m-nom" placeholder="ex: Duke Madson"></div>
+        <div class="form-group"><label class="form-label">Grade *</label><select class="form-control" id="m-grade"></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Date d'entrée</label><input type="date" class="form-control" id="m-date"></div>
+        <div class="form-group"><label class="form-label">Statut</label><select class="form-control" id="m-statut"><option value="actif">Actif</option><option value="inactif">Inactif</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="m-notes"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-member')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveMember()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-grade">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title" id="modal-grade-title">Nouveau grade</div><button class="modal-close" onclick="closeModal('modal-grade')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="g-id">
+      <div class="form-group"><label class="form-label">Nom du grade *</label><input type="text" class="form-control" id="g-nom"></div>
+      <div class="form-group"><label class="form-label">Niveau</label><input type="number" class="form-control" id="g-niveau" min="1"></div>
+      <div class="form-group"><label class="form-label">Catégorie</label><select class="form-control" id="g-categorie"><option value="membre">Membre standard</option><option value="haut-grade">Haut gradé</option></select></div>
+      <div class="form-group"><label class="form-label">Couleur badge</label><select class="form-control" id="g-color"><option value="silver">Argent</option><option value="gold">Or</option><option value="red">Rouge</option><option value="blue">Bleu</option><option value="green">Vert</option></select></div>
+      <div class="form-group">
+        <label class="form-label">Accès finances (Trésorier+)</label>
+        <select class="form-control" id="g-finance"><option value="0">Non</option><option value="1">Oui</option></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-grade')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveGrade()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-quota">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Enregistrer une livraison</div><button class="modal-close" onclick="closeModal('modal-quota')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="q-id">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Membre *</label><select class="form-control" id="q-membre"></select></div>
+        <div class="form-group"><label class="form-label">Type de matériau *</label><select class="form-control" id="q-type"><option value="metal">🔩 Métal</option><option value="bois">🪵 Bois</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Quantité *</label><input type="number" class="form-control" id="q-quantite" placeholder="ex: 50" min="1"></div>
+        <div class="form-group"><label class="form-label">Date *</label><input type="date" class="form-control" id="q-date"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Commentaire</label><textarea class="form-control" id="q-commentaire"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-quota')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveQuota()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-transaction">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Nouvelle transaction</div><button class="modal-close" onclick="closeModal('modal-transaction')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="t-id">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Type *</label><select class="form-control" id="t-type"><option value="entree">💚 Entrée</option><option value="sortie">❤️ Sortie</option></select></div>
+        <div class="form-group"><label class="form-label">Montant ($) *</label><input type="number" class="form-control" id="t-montant" placeholder="ex: 50000" min="0"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Catégorie *</label><select class="form-control" id="t-categorie"><option>Activités illégales</option><option>Vente matériaux</option><option>Cotisations</option><option>Armes</option><option>Véhicules</option><option>Club-house</option><option>Événements</option><option>Logistique</option><option>Drogue</option><option>Bénéfice vente</option><option>Divers</option></select></div>
+        <div class="form-group"><label class="form-label">Date *</label><input type="date" class="form-control" id="t-date"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Description *</label><textarea class="form-control" id="t-description"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-transaction')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveTransaction()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ACHAT/VENTE -->
+<div class="modal-overlay" id="modal-fav">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title" id="modal-fav-title">Nouvelle facture</div><button class="modal-close" onclick="closeModal('modal-fav')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="fav-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Type d'opération *</label>
+          <select class="form-control" id="fav-type" onchange="updateFavForm()">
+            <option value="achat">🛒 Achat</option>
+            <option value="vente">💸 Vente</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Catégorie *</label>
+          <select class="form-control" id="fav-categorie">
+            <option>Armes</option><option>Drogue</option><option>Véhicules</option><option>Matériaux</option><option>Club-house</option><option>Logistique</option><option>Divers</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Désignation de l'article *</label><input type="text" class="form-control" id="fav-article" placeholder="ex: Cargaison d'armes nord..."></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Date *</label><input type="date" class="form-control" id="fav-date"></div>
+        <div class="form-group"><label class="form-label">Statut</label><select class="form-control" id="fav-statut"><option value="paye">Payé(e)</option><option value="non-paye">En attente</option></select></div>
+      </div>
+      <hr class="sep">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prix de revient ($) <span style="color:var(--text3)">(coût d'achat)</span></label>
+          <input type="number" class="form-control" id="fav-prix-revient" placeholder="0" min="0" oninput="calcBenefice()">
+        </div>
+        <div class="form-group" id="fav-prix-vente-group">
+          <label class="form-label">Prix de vente ($)</label>
+          <input type="number" class="form-control" id="fav-prix-vente" placeholder="0" min="0" oninput="calcBenefice()">
+        </div>
+      </div>
+      <div id="fav-benefice-preview" style="display:none;padding:12px 16px;border-radius:var(--radius);margin-top:8px;font-family:var(--font-heading);font-size:14px;letter-spacing:1px"></div>
+      <div class="form-group mt-2"><label class="form-label">Notes</label><textarea class="form-control" id="fav-notes" placeholder="Détails supplémentaires..."></textarea></div>
+      <div id="fav-auto-treso-info" style="display:none;margin-top:12px;padding:10px 14px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);border-radius:var(--radius);font-family:var(--font-heading);font-size:12px;color:var(--green2);letter-spacing:1px">
+        ✅ Le bénéfice sera automatiquement ajouté à la trésorerie du club lors de la sauvegarde.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-fav')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveFactureAV()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-budget">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title" id="modal-budget-title">Nouveau budget</div><button class="modal-close" onclick="closeModal('modal-budget')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="b-id">
+      <div class="form-group"><label class="form-label">Nom *</label><input type="text" class="form-control" id="b-nom"></div>
+      <div class="form-group"><label class="form-label">Icône</label><input type="text" class="form-control" id="b-icon" placeholder="ex: 🔫"></div>
+      <div class="form-group"><label class="form-label">Montant prévu ($) *</label><input type="number" class="form-control" id="b-montant" min="0"></div>
+      <div class="form-group"><label class="form-label">Montant utilisé ($)</label><input type="number" class="form-control" id="b-utilise" min="0"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-budget')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveBudget()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-cotisation">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Enregistrer une cotisation</div><button class="modal-close" onclick="closeModal('modal-cotisation')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="c-id">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Membre *</label><select class="form-control" id="c-membre"></select></div>
+        <div class="form-group"><label class="form-label">Montant ($) *</label><input type="number" class="form-control" id="c-montant"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Date *</label><input type="date" class="form-control" id="c-date"></div>
+        <div class="form-group"><label class="form-label">Statut</label><select class="form-control" id="c-statut"><option value="paye">Payée</option><option value="en-attente">En attente</option><option value="retard">En retard</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="c-notes"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-cotisation')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveCotisation()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-create-user">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title">Créer un compte</div><button class="modal-close" onclick="closeModal('modal-create-user')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Nom d'utilisateur *</label><input type="text" class="form-control" id="cu-user"></div>
+      <div class="form-group"><label class="form-label">Mot de passe *</label><input type="password" class="form-control" id="cu-pass"></div>
+      <div class="form-group"><label class="form-label">Grade</label><select class="form-control" id="cu-grade"></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-create-user')">Annuler</button>
+      <button class="btn btn-primary" onclick="createUser()">✅ Créer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal modal-sm">
+    <div class="modal-header"><div class="modal-title">⚠️ Confirmation</div><button class="modal-close" onclick="closeModal('modal-confirm')">✕</button></div>
+    <div class="modal-body"><p style="font-family:var(--font-heading);font-size:14px;color:var(--text2);letter-spacing:1px" id="confirm-msg">Êtes-vous sûr ?</p></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-confirm')">Annuler</button>
+      <button class="btn btn-danger" id="confirm-ok-btn">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════
+   DATABASE (IndexedDB)
+══════════════════════════════════════════════════════ */
+const DB_NAME='LostMCDB_v2';const DB_VERSION=2;let db=null;
+const STORES={users:'users',membres:'membres',grades:'grades',quotas:'quotas',transactions:'transactions',budgets:'budgets',facturesAV:'facturesAV',cotisations:'cotisations',logs:'logs',params:'params'};
+
+function initDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(DB_NAME,DB_VERSION);
+    req.onupgradeneeded=e=>{
+      const d=e.target.result;
+      Object.values(STORES).forEach(n=>{if(!d.objectStoreNames.contains(n))d.createObjectStore(n,{keyPath:'id',autoIncrement:true});});
+    };
+    req.onsuccess=e=>{db=e.target.result;res(db);};
+    req.onerror=e=>rej(e.target.error);
+  });
+}
+const dbGetAll=s=>new Promise((r,j)=>{const tx=db.transaction(s,'readonly');const q=tx.objectStore(s).getAll();q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error);});
+const dbGet=(s,id)=>new Promise((r,j)=>{const tx=db.transaction(s,'readonly');const q=tx.objectStore(s).get(id);q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error);});
+const dbAdd=(s,o)=>new Promise((r,j)=>{const tx=db.transaction(s,'readwrite');const q=tx.objectStore(s).add(o);q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error);});
+const dbPut=(s,o)=>new Promise((r,j)=>{const tx=db.transaction(s,'readwrite');const q=tx.objectStore(s).put(o);q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error);});
+const dbDelete=(s,id)=>new Promise((r,j)=>{const tx=db.transaction(s,'readwrite');const q=tx.objectStore(s).delete(id);q.onsuccess=()=>r();q.onerror=()=>j(q.error);});
+const dbClear=s=>new Promise((r,j)=>{const tx=db.transaction(s,'readwrite');const q=tx.objectStore(s).clear();q.onsuccess=()=>r();q.onerror=()=>j(q.error);});
+
+/* ══════════════════════════════════════════════════════
+   DEFAULT DATA
+══════════════════════════════════════════════════════ */
+const DEFAULT_GRADES=[
+  {nom:'Prospect',niveau:1,categorie:'membre',color:'silver',financeAccess:false},
+  {nom:'Full Patch',niveau:2,categorie:'membre',color:'silver',financeAccess:false},
+  {nom:'Enforcer',niveau:3,categorie:'membre',color:'silver',financeAccess:false},
+  {nom:'Senior Member',niveau:4,categorie:'membre',color:'silver',financeAccess:false},
+  {nom:'Représentant',niveau:5,categorie:'membre',color:'silver',financeAccess:false},
+  {nom:'Bookkeeper',niveau:6,categorie:'membre',color:'silver',financeAccess:false},
+  {nom:'Asskicker',niveau:7,categorie:'membre',color:'silver',financeAccess:false},
+  {nom:'Arc Rider',niveau:8,categorie:'membre',color:'silver',financeAccess:false},
+  {nom:'Tailgunner',niveau:9,categorie:'membre',color:'blue',financeAccess:false},
+  {nom:'Peacemaker',niveau:10,categorie:'membre',color:'blue',financeAccess:false},
+  {nom:'Secrétaire',niveau:11,categorie:'haut-grade',color:'blue',financeAccess:false},
+  {nom:'Trésorier',niveau:12,categorie:'haut-grade',color:'gold',financeAccess:true},
+  {nom:'Road Captain',niveau:13,categorie:'haut-grade',color:'gold',financeAccess:true},
+  {nom:'Road Guard',niveau:14,categorie:'haut-grade',color:'gold',financeAccess:true},
+  {nom:'Lieutenant',niveau:15,categorie:'haut-grade',color:'gold',financeAccess:true},
+  {nom:'Field Sergeant At Arms',niveau:16,categorie:'haut-grade',color:'red',financeAccess:true},
+  {nom:'Vice President',niveau:17,categorie:'haut-grade',color:'red',financeAccess:true},
+  {nom:'President',niveau:18,categorie:'haut-grade',color:'red',financeAccess:true},
+  {nom:'National President',niveau:19,categorie:'haut-grade',color:'red',financeAccess:true}
+];
+
+const ALL_PERMISSIONS=[
+  {key:'view_dashboard',label:'Voir le tableau de bord'},
+  {key:'view_membres',label:'Voir les membres'},
+  {key:'manage_membres',label:'Gérer les membres'},
+  {key:'view_grades',label:'Voir les grades'},
+  {key:'manage_grades',label:'Gérer les grades'},
+  {key:'view_quotas',label:'Voir les quotas'},
+  {key:'manage_quotas',label:'Gérer les quotas'},
+  {key:'validate_quotas',label:'Valider les quotas'},
+  {key:'view_tresorerie',label:'Voir la trésorerie'},
+  {key:'manage_tresorerie',label:'Gérer la trésorerie'},
+  {key:'view_budgets',label:'Voir les budgets'},
+  {key:'manage_budgets',label:'Gérer les budgets'},
+  {key:'view_factures',label:'Voir les achats/ventes'},
+  {key:'manage_factures',label:'Gérer les achats/ventes'},
+  {key:'view_cotisations',label:'Voir les cotisations'},
+  {key:'manage_cotisations',label:'Gérer les cotisations'},
+  {key:'view_logs',label:'Voir les logs'},
+  {key:'manage_users',label:'Gérer les utilisateurs'},
+  {key:'manage_params',label:'Gérer les paramètres'},
+  {key:'delete_data',label:'Supprimer des données'},
+  {key:'export_data',label:'Exporter les données'},
+  {key:'discipline',label:'Gestion disciplinaire'}
+];
+
+function defaultPerms(niveau){
+  const p={};ALL_PERMISSIONS.forEach(x=>p[x.key]=false);
+  p.view_dashboard=true;p.view_membres=niveau>=1;p.view_quotas=niveau>=1;
+  p.manage_quotas=niveau>=5;p.validate_quotas=niveau>=15;
+  p.view_tresorerie=niveau>=12;p.manage_tresorerie=niveau>=12;
+  p.view_budgets=niveau>=12;p.manage_budgets=niveau>=12;
+  p.view_factures=niveau>=12;p.manage_factures=niveau>=12;
+  p.view_cotisations=niveau>=12;p.manage_cotisations=niveau>=12;
+  p.view_grades=niveau>=11;p.manage_grades=niveau>=18;
+  p.manage_membres=niveau>=17;p.view_logs=niveau>=16;
+  p.manage_users=niveau>=18;p.manage_params=niveau>=18;
+  p.delete_data=niveau>=18;p.export_data=niveau>=15;p.discipline=niveau>=16;
+  if(niveau>=19)ALL_PERMISSIONS.forEach(x=>p[x.key]=true);
+  return p;
+}
+
+function gradeToSlug(nom){return nom.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');}
+
+async function seedDefaultData(){
+  const users=await dbGetAll(STORES.users);if(users.length>0)return;
+  for(const g of DEFAULT_GRADES){await dbAdd(STORES.grades,{...g,permissions:defaultPerms(g.niveau)});}
+  for(const g of DEFAULT_GRADES){
+    const slug=gradeToSlug(g.nom);
+    await dbAdd(STORES.users,{username:slug,password:btoa(slug+'123'),plainPassword:slug+'123',grade:g.nom,gradeNiveau:g.niveau,gradeCategorie:g.categorie,financeAccess:g.financeAccess,isSystemAccount:true,createdAt:new Date().toISOString(),lastLogin:null});
+  }
+  await dbAdd(STORES.users,{username:'admin',password:btoa('admin123'),plainPassword:'admin123',grade:'National President',gradeNiveau:19,gradeCategorie:'haut-grade',financeAccess:true,isSystemAccount:false,createdAt:new Date().toISOString(),lastLogin:null});
+  await dbPut(STORES.params,{id:1,clubName:'Lost MC',quotaMin:100,cotisAmount:5000});
+
+  const sm=[
+    {nom:'Duke Madson',grade:'President',gradeNiveau:18,dateEntree:'2024-01-15',statut:'actif',notes:'Fondateur'},
+    {nom:'Reaper Jones',grade:'Vice President',gradeNiveau:17,dateEntree:'2024-02-10',statut:'actif',notes:''},
+    {nom:'Ghost Rider',grade:'Trésorier',gradeNiveau:12,dateEntree:'2024-03-01',statut:'actif',notes:''},
+    {nom:'Black Snake',grade:'Enforcer',gradeNiveau:3,dateEntree:'2024-04-20',statut:'actif',notes:''},
+    {nom:'Iron Wolf',grade:'Prospect',gradeNiveau:1,dateEntree:'2024-06-01',statut:'actif',notes:'Nouveau'}
+  ];
+  for(const m of sm)await dbAdd(STORES.membres,{...m,createdAt:new Date().toISOString()});
+
+  const now=new Date();
+  const txs=[
+    {num:'TRX-001',date:fmtDate(new Date(now-5*86400000)),type:'entree',categorie:'Activités illégales',description:'Livraison cargaison nord',montant:150000,auteur:'Duke Madson',createdAt:new Date().toISOString()},
+    {num:'TRX-002',date:fmtDate(new Date(now-4*86400000)),type:'sortie',categorie:'Armes',description:'Achat armement lourd',montant:75000,auteur:'Ghost Rider',createdAt:new Date().toISOString()},
+    {num:'TRX-003',date:fmtDate(new Date(now-3*86400000)),type:'entree',categorie:'Cotisations',description:'Cotisations mensuelles',montant:25000,auteur:'Ghost Rider',createdAt:new Date().toISOString()},
+    {num:'TRX-004',date:fmtDate(new Date(now-2*86400000)),type:'sortie',categorie:'Logistique',description:'Carburant convois',montant:12000,auteur:'Reaper Jones',createdAt:new Date().toISOString()},
+    {num:'TRX-005',date:fmtDate(new Date(now-1*86400000)),type:'entree',categorie:'Vente matériaux',description:'Vente métal et bois',montant:48000,auteur:'Duke Madson',createdAt:new Date().toISOString()}
+  ];
+  for(const t of txs)await dbAdd(STORES.transactions,t);
+
+  const budgets=[
+    {nom:'Armes',icon:'🔫',montantPrevu:500000,montantUtilise:75000},
+    {nom:'Drogue',icon:'💊',montantPrevu:300000,montantUtilise:120000},
+    {nom:'Véhicules',icon:'🏍️',montantPrevu:400000,montantUtilise:200000},
+    {nom:'Club-house',icon:'🏠',montantPrevu:200000,montantUtilise:45000},
+    {nom:'Logistique',icon:'🚛',montantPrevu:150000,montantUtilise:62000}
+  ];
+  for(const b of budgets)await dbAdd(STORES.budgets,b);
+
+  const membres=await dbGetAll(STORES.membres);
+  const qSamples=[
+    {membreId:membres[0]?.id,membreNom:membres[0]?.nom,type:'metal',quantite:60,date:fmtDate(new Date(now-2*86400000)),commentaire:'',statut:'valide',validateur:'admin',createdAt:new Date().toISOString()},
+    {membreId:membres[1]?.id,membreNom:membres[1]?.nom,type:'metal',quantite:80,date:fmtDate(new Date(now-1*86400000)),commentaire:'',statut:'en-attente',validateur:'',createdAt:new Date().toISOString()},
+    {membreId:membres[2]?.id,membreNom:membres[2]?.nom,type:'bois',quantite:40,date:fmtDate(now),commentaire:'Partiel',statut:'en-attente',validateur:'',createdAt:new Date().toISOString()}
+  ];
+  for(const q of qSamples)await dbAdd(STORES.quotas,q);
+
+  // Sample factures achat/vente
+  const favSamples=[
+    {num:'FAV-001',type:'achat',categorie:'Armes',article:'Lot de pistolets',date:fmtDate(new Date(now-10*86400000)),prixRevient:50000,prixVente:0,benefice:0,statut:'paye',notes:'Fournisseur habituel',tresoAdded:false,createdAt:new Date().toISOString()},
+    {num:'FAV-002',type:'vente',categorie:'Armes',article:'Lot de pistolets revendu',date:fmtDate(new Date(now-8*86400000)),prixRevient:50000,prixVente:95000,benefice:45000,statut:'paye',notes:'',tresoAdded:true,createdAt:new Date().toISOString()},
+    {num:'FAV-003',type:'achat',categorie:'Drogue',article:'Cargaison blanche',date:fmtDate(new Date(now-5*86400000)),prixRevient:80000,prixVente:0,benefice:0,statut:'paye',notes:'',tresoAdded:false,createdAt:new Date().toISOString()},
+    {num:'FAV-004',type:'vente',categorie:'Drogue',article:'Revente cargaison',date:fmtDate(new Date(now-3*86400000)),prixRevient:80000,prixVente:200000,benefice:120000,statut:'paye',notes:'',tresoAdded:true,createdAt:new Date().toISOString()}
+  ];
+  for(const f of favSamples)await dbAdd(STORES.facturesAV,f);
+
+  // Add auto-treso for vente samples
+  await dbAdd(STORES.transactions,{num:'TRX-AUTO-001',date:fmtDate(new Date(now-8*86400000)),type:'entree',categorie:'Bénéfice vente',description:'Bénéfice: Lot de pistolets revendu',montant:45000,auteur:'Système',isAutomatic:true,createdAt:new Date().toISOString()});
+  await dbAdd(STORES.transactions,{num:'TRX-AUTO-002',date:fmtDate(new Date(now-3*86400000)),type:'entree',categorie:'Bénéfice vente',description:'Bénéfice: Revente cargaison',montant:120000,auteur:'Système',isAutomatic:true,createdAt:new Date().toISOString()});
+}
+
+/* ══════════════════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════════════════ */
+let currentUser=null;let favTabFilter='all';
+
+function doLogin(){
+  const username=document.getElementById('login-user').value.trim();
+  const password=document.getElementById('login-pass').value;
+  if(!username||!password){showLoginError('Veuillez remplir tous les champs.');return;}
+  dbGetAll(STORES.users).then(users=>{
+    const user=users.find(u=>u.username===username&&u.password===btoa(password));
+    if(!user){showLoginError('Identifiants incorrects.');addLog('AUTH','Connexion échouée',username,'');return;}
+    currentUser=user;user.lastLogin=new Date().toISOString();dbPut(STORES.users,user);
+    addLog('AUTH','Connexion réussie',username,'');
+    document.getElementById('login-page').style.display='none';
+    document.getElementById('app').style.display='flex';
+    document.getElementById('hdr-name').textContent=user.username;
+    document.getElementById('hdr-grade').textContent=user.grade||'—';
+    document.getElementById('login-error').style.display='none';
+    loadUserPermissions().then(()=>initApp());
+  });
+}
+
+function doLogout(){addLog('AUTH','Déconnexion',currentUser?.username,'');currentUser=null;document.getElementById('app').style.display='none';document.getElementById('login-page').style.display='flex';document.getElementById('login-user').value='';document.getElementById('login-pass').value='';}
+function showLoginError(msg){const el=document.getElementById('login-error');el.textContent=msg;el.style.display='block';}
+function hasPermission(key){if(!currentUser)return false;if(currentUser.gradeNiveau>=19)return true;return currentUser._permissions?.[key]===true;}
+function hasFinanceAccess(){if(!currentUser)return false;if(currentUser.gradeNiveau>=19)return true;return currentUser.financeAccess===true;}
+
+async function loadUserPermissions(){
+  if(!currentUser)return;
+  const grades=await dbGetAll(STORES.grades);
+  const grade=grades.find(g=>g.nom===currentUser.grade);
+  if(grade){currentUser._permissions=grade.permissions||{};currentUser.gradeNiveau=grade.niveau||0;currentUser.financeAccess=grade.financeAccess||false;}
+  else{currentUser._permissions={};if(currentUser.username==='admin'){currentUser.gradeNiveau=19;currentUser.financeAccess=true;ALL_PERMISSIONS.forEach(p=>{currentUser._permissions[p.key]=true;});}}
+}
+
+/* ══════════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════════ */
+let charts={};
+
+function nav(el){
+  const page=el.dataset.page;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  loadPage(page);
+}
+
+function navFinance(el){
+  if(!hasFinanceAccess()){
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-finance-locked').classList.add('active');
+    showToast('Accès réservé au Trésorier et hauts gradés','warning');
+    return;
+  }
+  nav(el);
+}
+
+function loadPage(page){
+  switch(page){
+    case 'dashboard':renderDashboard();break;
+    case 'membres':renderMembres();break;
+    case 'grades':renderGrades();break;
+    case 'quotas':renderQuotas();break;
+    case 'tresorerie':renderTresorerie();break;
+    case 'factures-av':renderFacturesAV();break;
+    case 'budgets':renderBudgets();break;
+    case 'cotisations':renderCotisations();break;
+    case 'logs':renderLogs();break;
+    case 'parametres':renderParametres();break;
+  }
+}
+
+function switchFavTab(tab,el){
+  favTabFilter=tab;
+  document.querySelectorAll('.fav-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderFacturesAV();
+}
+
+/* ══════════════════════════════════════════════════════
+   CLOCK + AUTOSAVE
+══════════════════════════════════════════════════════ */
+function startClock(){
+  function tick(){const now=new Date();const el=document.getElementById('header-clock');if(el)el.textContent=`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;}
+  tick();setInterval(tick,1000);
+}
+function pad(n){return String(n).padStart(2,'0');}
+
+function startAutosave(){
+  setInterval(async()=>{
+    await triggerAutosave();
+  },2*60*1000);
+}
+
+async function triggerAutosave(){
+  // Sauvegarde en localStorage comme backup
+  const all={};
+  for(const s of Object.values(STORES)){all[s]=await dbGetAll(s);}
+  localStorage.setItem('lostmc_backup',JSON.stringify({ts:new Date().toISOString(),data:all}));
+  const ind=document.getElementById('autosave-ind');
+  if(ind){ind.classList.add('show');setTimeout(()=>ind.classList.remove('show'),3000);}
+}
+
+/* ══════════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════════ */
+function fmtDate(d){if(!d)return '';const dd=new Date(d);return `${dd.getFullYear()}-${pad(dd.getMonth()+1)}-${pad(dd.getDate())}`;}
+function fmt(n){return Number(n||0).toLocaleString('fr-FR');}
+function getWeekStart(){const now=new Date();const day=now.getDay();const diff=now.getDate()-(day===0?6:day-1);return new Date(now.setDate(diff));}
+function getPrevWeekStart(){const ws=getWeekStart();return new Date(ws.getTime()-7*86400000);}
+
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function showToast(msg,type='info',dur=3500){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=msg;c.appendChild(t);
+  setTimeout(()=>t.remove(),dur);
+}
+
+function addLog(action,detail,user,extra){
+  dbAdd(STORES.logs,{action,detail,user:user||currentUser?.username||'?',extra,ts:new Date().toISOString()}).catch(()=>{});
+}
+
+function confirmAction(msg,fn){
+  document.getElementById('confirm-msg').textContent=msg;
+  const btn=document.getElementById('confirm-ok-btn');
+  btn.onclick=()=>{closeModal('modal-confirm');fn();};
+  openModal('modal-confirm');
+}
+
+function confirmDelete(type,id){
+  const labels={membre:'ce membre',grade:'ce grade',quota:'cette livraison',transaction:'cette transaction',factureAV:'cet enregistrement',budget:'ce budget',cotisation:'cette cotisation',user:'cet utilisateur'};
+  confirmAction(`Supprimer ${labels[type]||'cet élément'} ?`,async()=>{
+    const storeMap={membre:STORES.membres,grade:STORES.grades,quota:STORES.quotas,transaction:STORES.transactions,factureAV:STORES.facturesAV,budget:STORES.budgets,cotisation:STORES.cotisations,user:STORES.users};
+    await dbDelete(storeMap[type],id);
+    addLog('SUPPRESSION',`Suppression ${type}`,currentUser?.username,String(id));
+    showToast('Supprimé','success');
+    loadPage(currentPage);
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   DASHBOARD
+══════════════════════════════════════════════════════ */
+async function renderDashboard(){
+  const [membres,transactions,quotas,facturesAV,budgets]=await Promise.all([
+    dbGetAll(STORES.membres),dbGetAll(STORES.transactions),dbGetAll(STORES.quotas),dbGetAll(STORES.facturesAV),dbGetAll(STORES.budgets)
+  ]);
+  const actifs=membres.filter(m=>m.statut==='actif').length;
+  const now=new Date();
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+  const txMonth=transactions.filter(t=>new Date(t.date)>=monthStart);
+  const revenus=txMonth.filter(t=>t.type==='entree').reduce((s,t)=>s+t.montant,0);
+  const depenses=txMonth.filter(t=>t.type==='sortie').reduce((s,t)=>s+t.montant,0);
+  const solde=transactions.filter(t=>t.type==='entree').reduce((s,t)=>s+t.montant,0)-transactions.filter(t=>t.type==='sortie').reduce((s,t)=>s+t.montant,0);
+  const weekStart=getWeekStart();
+  const qWeek=quotas.filter(q=>new Date(q.date)>=weekStart);
+  const qValides=qWeek.filter(q=>q.statut==='valide').length;
+  const qAttente=qWeek.filter(q=>q.statut==='en-attente').length;
+  const totalBenefice=facturesAV.filter(f=>f.type==='vente'&&f.statut==='paye').reduce((s,f)=>s+f.benefice,0);
+
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="stat-card red"><div class="stat-icon">👥</div><div class="stat-label">Membres actifs</div><div class="stat-value">${actifs}</div><div class="stat-change">${membres.length} total</div></div>
+    <div class="stat-card gold"><div class="stat-icon">💰</div><div class="stat-label">Solde du club</div><div class="stat-value">$${fmt(solde)}</div><div class="stat-change">Trésorerie totale</div></div>
+    <div class="stat-card green"><div class="stat-icon">📈</div><div class="stat-label">Revenus du mois</div><div class="stat-value">$${fmt(revenus)}</div><div class="stat-change up">↑ Ce mois</div></div>
+    <div class="stat-card silver"><div class="stat-icon">📉</div><div class="stat-label">Dépenses du mois</div><div class="stat-value">$${fmt(depenses)}</div><div class="stat-change down">↓ Ce mois</div></div>
+    <div class="stat-card blue"><div class="stat-icon">📦</div><div class="stat-label">Quotas validés</div><div class="stat-value">${qValides}</div><div class="stat-change">${qAttente} en attente</div></div>
+    <div class="stat-card orange"><div class="stat-icon">💸</div><div class="stat-label">Bénéfices ventes</div><div class="stat-value">$${fmt(totalBenefice)}</div><div class="stat-change up">↑ Total</div></div>
+  `;
+  const recent=[...transactions].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  document.getElementById('dash-transactions').innerHTML=recent.length?recent.map(t=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-family:var(--font-heading);font-size:13px">
+      <div><div style="color:var(--text2)">${t.description}</div><div style="color:var(--text3);font-size:11px;letter-spacing:1px">${t.date} · ${t.categorie}${t.isAutomatic?' · AUTO':''}</div></div>
+      <div class="${t.type==='entree'?'amount-in':'amount-out'}" style="font-family:var(--font-title);font-size:18px">${t.type==='entree'?'+':'-'}$${fmt(t.montant)}</div>
+    </div>`).join(''):`<div class="empty-state"><div class="empty-icon">💰</div>Aucune transaction</div>`;
+
+  const alerts=[];
+  membres.filter(m=>m.statut==='actif').forEach(m=>{
+    const tot=qWeek.filter(q=>q.membreId===m.id&&q.statut==='valide').reduce((s,q)=>s+q.quantite,0);
+    if(tot<100)alerts.push(`⚠️ ${m.nom} — quota insuffisant (${tot}/100)`);
+  });
+  budgets.filter(b=>b.montantUtilise/b.montantPrevu>0.85).forEach(b=>alerts.push(`📋 Budget "${b.nom}" à ${Math.round(b.montantUtilise/b.montantPrevu*100)}%`));
+  const facAttente=facturesAV.filter(f=>f.statut==='non-paye').length;
+  if(facAttente>0)alerts.push(`🧾 ${facAttente} facture(s) en attente de paiement`);
+  document.getElementById('dash-alerts').innerHTML=alerts.length?alerts.map(a=>`<div class="alert-item">${a}</div>`).join(''):`<div class="alert-item" style="border-left-color:var(--green)">✅ Aucune alerte</div>`;
+  renderTreasuryChart(transactions);renderQuotaChart(quotas,membres);
+}
+
+function renderTreasuryChart(transactions){
+  const ctx=document.getElementById('chart-treasury');if(!ctx)return;
+  if(charts.treasury)charts.treasury.destroy();
+  const months=[],entries=[],exits=[];
+  const now=new Date();
+  for(let i=5;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    months.push(d.toLocaleString('fr-FR',{month:'short',year:'2-digit'}));
+    const mEnd=new Date(d.getFullYear(),d.getMonth()+1,0);
+    const mTx=transactions.filter(t=>{const td=new Date(t.date);return td>=d&&td<=mEnd;});
+    entries.push(mTx.filter(t=>t.type==='entree').reduce((s,t)=>s+t.montant,0));
+    exits.push(mTx.filter(t=>t.type==='sortie').reduce((s,t)=>s+t.montant,0));
+  }
+  charts.treasury=new Chart(ctx,{type:'bar',data:{labels:months,datasets:[{label:'Entrées',data:entries,backgroundColor:'rgba(39,174,96,.6)',borderColor:'#27ae60',borderWidth:1},{label:'Sorties',data:exits,backgroundColor:'rgba(192,57,43,.6)',borderColor:'#c0392b',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#b0b0b0',font:{family:'Rajdhani',size:12}}}},scales:{x:{ticks:{color:'#707070'},grid:{color:'rgba(255,255,255,.05)'}},y:{ticks:{color:'#707070',callback:v=>'$'+fmt(v)},grid:{color:'rgba(255,255,255,.05)'}}}}});
+}
+
+function renderQuotaChart(quotas,membres){
+  const ctx=document.getElementById('chart-quotas');if(!ctx)return;
+  if(charts.quotas)charts.quotas.destroy();
+  const weekStart=getWeekStart();
+  const am=membres.filter(m=>m.statut==='actif').slice(0,6);
+  const labels=am.map(m=>m.nom.split(' ')[0]);
+  const metalD=am.map(m=>quotas.filter(q=>q.membreId===m.id&&q.type==='metal'&&new Date(q.date)>=weekStart&&q.statut==='valide').reduce((s,q)=>s+q.quantite,0));
+  const boisD=am.map(m=>quotas.filter(q=>q.membreId===m.id&&q.type==='bois'&&new Date(q.date)>=weekStart&&q.statut==='valide').reduce((s,q)=>s+q.quantite,0));
+  charts.quotas=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'Métal',data:metalD,backgroundColor:'rgba(138,155,168,.7)',borderColor:'#8a9ba8',borderWidth:1},{label:'Bois',data:boisD,backgroundColor:'rgba(201,162,39,.7)',borderColor:'#c9a227',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#b0b0b0',font:{family:'Rajdhani',size:12}}}},scales:{x:{stacked:true,ticks:{color:'#707070'},grid:{color:'rgba(255,255,255,.05)'}},y:{stacked:true,ticks:{color:'#707070'},grid:{color:'rgba(255,255,255,.05)'}}}}});
+}
+
+/* ══════════════════════════════════════════════════════
+   MEMBRES
+══════════════════════════════════════════════════════ */
+async function renderMembres(){
+  const [membres,grades]=await Promise.all([dbGetAll(STORES.membres),dbGetAll(STORES.grades)]);
+  const fg=document.getElementById('filter-grade');const cgf=fg.value;
+  fg.innerHTML='<option value="">Tous les grades</option>'+grades.sort((a,b)=>b.niveau-a.niveau).map(g=>`<option value="${g.nom}"${cgf===g.nom?' selected':''}>${g.nom}</option>`).join('');
+  const search=document.getElementById('search-membres').value.toLowerCase();
+  const gradeFilter=document.getElementById('filter-grade').value;
+  const statutFilter=document.getElementById('filter-statut').value;
+  let filtered=membres.filter(m=>(!search||m.nom.toLowerCase().includes(search))&&(!gradeFilter||m.grade===gradeFilter)&&(!statutFilter||m.statut===statutFilter)).sort((a,b)=>(b.gradeNiveau||0)-(a.gradeNiveau||0));
+  document.getElementById('membres-count').textContent=`${filtered.length} membre(s) sur ${membres.length}`;
+  const quotas=await dbGetAll(STORES.quotas);const weekStart=getWeekStart();
+  document.getElementById('tbody-membres').innerHTML=filtered.length?filtered.map(m=>{
+    const qWeek=quotas.filter(q=>q.membreId===m.id&&new Date(q.date)>=weekStart&&q.statut==='valide');
+    const qTotal=qWeek.reduce((s,q)=>s+q.quantite,0);const qPct=Math.min(100,Math.round(qTotal/100*100));
+    const gradeObj=grades.find(g=>g.nom===m.grade);const bc=gradeObj?`badge-${gradeObj.color}`:'badge-silver';
+    return `<tr><td><div style="display:flex;align-items:center;gap:10px"><div class="member-avatar">💀</div><div><div style="color:var(--text);font-weight:600">${m.nom}</div><div style="font-size:11px;color:var(--text3);font-family:var(--font-heading);letter-spacing:1px">Depuis ${m.dateEntree||'—'}</div></div></div></td>
+    <td><span class="badge ${bc}">${m.grade||'—'}</span></td><td><span class="badge ${m.statut==='actif'?'badge-green':'badge-red'}">${m.statut}</span></td><td class="td-mono">${m.dateEntree||'—'}</td>
+    <td style="min-width:120px"><div style="margin-bottom:4px;font-family:var(--font-heading);font-size:11px;color:var(--text3)">${qTotal}/100 — ${qPct}%</div><div class="progress-wrap"><div class="progress-bar ${qPct>=100?'green':qPct>=50?'gold':''}" style="width:${qPct}%"></div></div></td>
+    <td><div style="display:flex;gap:6px"><button class="btn btn-secondary btn-xs" onclick="openMemberModal(${m.id})">✏️</button><button class="btn btn-danger btn-xs" onclick="confirmDelete('membre',${m.id})">🗑️</button></div></td></tr>`;
+  }).join(''):`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">👥</div>Aucun membre trouvé</div></td></tr>`;
+}
+
+async function openMemberModal(id=null){
+  const grades=await dbGetAll(STORES.grades);
+  document.getElementById('m-grade').innerHTML=grades.sort((a,b)=>b.niveau-a.niveau).map(g=>`<option value="${g.nom}">${g.nom}</option>`).join('');
+  document.getElementById('m-date').value=fmtDate(new Date());
+  if(id){const m=await dbGet(STORES.membres,id);document.getElementById('modal-member-title').textContent='Modifier';document.getElementById('m-id').value=m.id;document.getElementById('m-nom').value=m.nom;document.getElementById('m-grade').value=m.grade;document.getElementById('m-date').value=m.dateEntree;document.getElementById('m-statut').value=m.statut;document.getElementById('m-notes').value=m.notes||'';}
+  else{document.getElementById('modal-member-title').textContent='Ajouter un membre';document.getElementById('m-id').value='';document.getElementById('m-nom').value='';document.getElementById('m-notes').value='';document.getElementById('m-statut').value='actif';}
+  openModal('modal-member');
+}
+
+async function saveMember(){
+  const nom=document.getElementById('m-nom').value.trim();const grade=document.getElementById('m-grade').value;
+  if(!nom){showToast('Le nom est requis','error');return;}
+  const grades=await dbGetAll(STORES.grades);const go=grades.find(g=>g.nom===grade);
+  const obj={nom,grade,gradeNiveau:go?.niveau||0,dateEntree:document.getElementById('m-date').value,statut:document.getElementById('m-statut').value,notes:document.getElementById('m-notes').value,updatedAt:new Date().toISOString()};
+  const eid=document.getElementById('m-id').value;
+  if(eid){obj.id=parseInt(eid);await dbPut(STORES.membres,obj);addLog('MEMBRES','Modification',currentUser.username,nom);showToast('Membre modifié','success');}
+  else{obj.createdAt=new Date().toISOString();await dbAdd(STORES.membres,obj);addLog('MEMBRES','Ajout',currentUser.username,nom);showToast('Membre ajouté','success');}
+  closeModal('modal-member');renderMembres();
+}
+
+/* ══════════════════════════════════════════════════════
+   GRADES
+══════════════════════════════════════════════════════ */
+async function renderGrades(){
+  const grades=await dbGetAll(STORES.grades);const sorted=grades.sort((a,b)=>b.niveau-a.niveau);
+  const hauts=sorted.filter(g=>g.categorie==='haut-grade');const membres=sorted.filter(g=>g.categorie==='membre');
+  document.getElementById('grades-list').innerHTML=`
+    <div style="padding:12px 16px;background:var(--dark2);font-family:var(--font-heading);font-size:10px;letter-spacing:3px;color:var(--text3);text-transform:uppercase">Hauts gradés</div>
+    ${hauts.map(g=>renderGradeItem(g)).join('')}
+    <div style="padding:12px 16px;background:var(--dark2);font-family:var(--font-heading);font-size:10px;letter-spacing:3px;color:var(--text3);text-transform:uppercase">Membres</div>
+    ${membres.map(g=>renderGradeItem(g)).join('')}`;
+}
+
+function renderGradeItem(g){
+  return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .2s" onmouseover="this.style.background='var(--dark2)'" onmouseout="this.style.background=''" onclick="showGradePerms(${g.id})">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="badge badge-${g.color}" style="min-width:60px;justify-content:center">Niv.${g.niveau}</span>
+      <span style="font-family:var(--font-heading);font-size:14px;color:var(--text);letter-spacing:1px">${g.nom}</span>
+      ${g.financeAccess?'<span class="badge badge-gold">💰</span>':''}
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-secondary btn-xs" onclick="event.stopPropagation();openGradeModal(${g.id})">✏️</button>
+      <button class="btn btn-danger btn-xs" onclick="event.stopPropagation();confirmDelete('grade',${g.id})">🗑️</button>
+    </div></div>`;
+}
+
+async function showGradePerms(id){
+  const g=await dbGet(STORES.grades,id);
+  document.getElementById('grade-perm-title').textContent=`Permissions — ${g.nom}`;
+  const perms=g.permissions||{};
+  document.getElementById('grade-perm-body').innerHTML=`<div style="display:flex;flex-direction:column;gap:10px">${ALL_PERMISSIONS.map(p=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+      <span class="perm-label">${p.label}</span>
+      <label class="toggle-switch"><input type="checkbox" ${perms[p.key]?'checked':''} onchange="updatePerm(${id},'${p.key}',this.checked)"><span class="toggle-slider"></span></label>
+    </div>`).join('')}</div>`;
+}
+
+async function updatePerm(gradeId,permKey,value){
+  const g=await dbGet(STORES.grades,gradeId);if(!g.permissions)g.permissions={};g.permissions[permKey]=value;
+  await dbPut(STORES.grades,g);addLog('GRADES',`Perm "${permKey}" → ${value}`,currentUser.username,g.nom);showToast('Permission mise à jour','success');
+}
+
+async function openGradeModal(id=null){
+  if(id){const g=await dbGet(STORES.grades,id);document.getElementById('modal-grade-title').textContent='Modifier';document.getElementById('g-id').value=g.id;document.getElementById('g-nom').value=g.nom;document.getElementById('g-niveau').value=g.niveau;document.getElementById('g-categorie').value=g.categorie;document.getElementById('g-color').value=g.color||'silver';document.getElementById('g-finance').value=g.financeAccess?'1':'0';}
+  else{document.getElementById('modal-grade-title').textContent='Nouveau grade';document.getElementById('g-id').value='';document.getElementById('g-nom').value='';document.getElementById('g-niveau').value='';document.getElementById('g-categorie').value='membre';document.getElementById('g-color').value='silver';document.getElementById('g-finance').value='0';}
+  openModal('modal-grade');
+}
+
+async function saveGrade(){
+  const nom=document.getElementById('g-nom').value.trim();const niveau=parseInt(document.getElementById('g-niveau').value)||1;
+  if(!nom){showToast('Le nom est requis','error');return;}
+  const financeAccess=document.getElementById('g-finance').value==='1';
+  const eid=document.getElementById('g-id').value;
+  if(eid){const g=await dbGet(STORES.grades,parseInt(eid));g.nom=nom;g.niveau=niveau;g.categorie=document.getElementById('g-categorie').value;g.color=document.getElementById('g-color').value;g.financeAccess=financeAccess;await dbPut(STORES.grades,g);addLog('GRADES','Modification',currentUser.username,nom);showToast('Grade modifié','success');}
+  else{await dbAdd(STORES.grades,{nom,niveau,categorie:document.getElementById('g-categorie').value,color:document.getElementById('g-color').value,financeAccess,permissions:defaultPerms(niveau)});addLog('GRADES','Création',currentUser.username,nom);showToast('Grade créé','success');}
+  closeModal('modal-grade');renderGrades();
+}
+
+/* ══════════════════════════════════════════════════════
+   QUOTAS
+══════════════════════════════════════════════════════ */
+async function renderQuotas(){
+  const [membres,quotas,params]=await Promise.all([dbGetAll(STORES.membres),dbGetAll(STORES.quotas),dbGet(STORES.params,1)]);
+  const quotaMin=params?.quotaMin||100;
+  const weekFilter=document.getElementById('quota-week-filter').value;
+  const weekStart=weekFilter==='last'?getPrevWeekStart():getWeekStart();
+  const weekEnd=weekFilter==='last'?getWeekStart():new Date();
+  const qFiltered=weekFilter==='all'?quotas:quotas.filter(q=>{const d=new Date(q.date);return d>=weekStart&&d<weekEnd;});
+  const valides=qFiltered.filter(q=>q.statut==='valide').length;const attente=qFiltered.filter(q=>q.statut==='en-attente').length;
+  const totalMat=qFiltered.filter(q=>q.statut==='valide').reduce((s,q)=>s+q.quantite,0);
+  const metal=qFiltered.filter(q=>q.type==='metal'&&q.statut==='valide').reduce((s,q)=>s+q.quantite,0);
+  const bois=qFiltered.filter(q=>q.type==='bois'&&q.statut==='valide').reduce((s,q)=>s+q.quantite,0);
+  document.getElementById('quota-stats').innerHTML=`
+    <div class="stat-card red"><div class="stat-icon">📦</div><div class="stat-label">Total validé</div><div class="stat-value">${totalMat}</div></div>
+    <div class="stat-card silver"><div class="stat-icon">🔩</div><div class="stat-label">Métal</div><div class="stat-value">${metal}</div></div>
+    <div class="stat-card gold"><div class="stat-icon">🪵</div><div class="stat-label">Bois</div><div class="stat-value">${bois}</div></div>
+    <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-label">Validées</div><div class="stat-value">${valides}</div></div>
+    <div class="stat-card orange"><div class="stat-icon">⏳</div><div class="stat-label">En attente</div><div class="stat-value">${attente}</div></div>`;
+  const activeMembers=membres.filter(m=>m.statut==='actif');
+  document.getElementById('quota-progress-list').innerHTML=activeMembers.map(m=>{
+    const mQ=qFiltered.filter(q=>q.membreId===m.id&&q.statut==='valide');
+    const tot=mQ.reduce((s,q)=>s+q.quantite,0);const mM=mQ.filter(q=>q.type==='metal').reduce((s,q)=>s+q.quantite,0);const bM=mQ.filter(q=>q.type==='bois').reduce((s,q)=>s+q.quantite,0);
+    const pct=Math.min(100,Math.round(tot/quotaMin*100));
+    return `<div class="quota-card"><div class="quota-member"><div class="member-avatar">💀</div><div><div style="font-family:var(--font-heading);font-size:14px;color:var(--text);letter-spacing:1px">${m.nom}</div><div style="font-size:11px;color:var(--text3);font-family:var(--font-heading);letter-spacing:1px">${m.grade}</div></div><div style="margin-left:auto"><span class="badge ${pct>=100?'badge-green':pct>=50?'badge-gold':'badge-red'}">${pct}%</span></div></div>
+    <div class="quota-stats"><span>Total:<span>${tot}/${quotaMin}</span></span><span>🔩<span>${mM}</span></span><span>🪵<span>${bM}</span></span></div>
+    <div class="progress-wrap"><div class="progress-bar ${pct>=100?'green':pct>=50?'gold':''}" style="width:${pct}%"></div></div></div>`;
+  }).join('')||`<div class="empty-state"><div class="empty-icon">👥</div>Aucun membre actif</div>`;
+  const recent=[...quotas].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,30);
+  document.getElementById('tbody-quotas').innerHTML=recent.map(q=>`<tr><td style="color:var(--text)">${q.membreNom}</td><td><span class="badge ${q.type==='metal'?'badge-silver':'badge-gold'}">${q.type==='metal'?'🔩 Métal':'🪵 Bois'}</span></td><td style="color:var(--text);font-weight:600">${q.quantite}</td><td class="td-mono">${q.date}</td>
+    <td><span class="badge ${q.statut==='valide'?'badge-green':q.statut==='en-attente'?'badge-gold':'badge-red'}">${q.statut}</span></td>
+    <td><div style="display:flex;gap:4px">${q.statut==='en-attente'?`<button class="btn btn-success btn-xs" onclick="validerQuota(${q.id},'valide')">✅</button><button class="btn btn-danger btn-xs" onclick="validerQuota(${q.id},'refuse')">❌</button>`:''}<button class="btn btn-danger btn-xs" onclick="confirmDelete('quota',${q.id})">🗑️</button></div></td></tr>`).join('')||`<tr><td colspan="6"><div class="empty-state">Aucune livraison</div></td></tr>`;
+}
+
+async function openQuotaModal(){
+  const membres=await dbGetAll(STORES.membres);
+  document.getElementById('q-membre').innerHTML=membres.filter(m=>m.statut==='actif').map(m=>`<option value="${m.id}" data-nom="${m.nom}">${m.nom}</option>`).join('');
+  document.getElementById('q-date').value=fmtDate(new Date());document.getElementById('q-quantite').value='';document.getElementById('q-commentaire').value='';document.getElementById('q-id').value='';
+  openModal('modal-quota');
+}
+
+async function saveQuota(){
+  const mEl=document.getElementById('q-membre');const membreId=parseInt(mEl.value);const membreNom=mEl.options[mEl.selectedIndex]?.dataset.nom||'';
+  const quantite=parseInt(document.getElementById('q-quantite').value);const date=document.getElementById('q-date').value;
+  if(!membreId||!quantite||!date){showToast('Remplissez tous les champs','error');return;}
+  await dbAdd(STORES.quotas,{membreId,membreNom,type:document.getElementById('q-type').value,quantite,date,commentaire:document.getElementById('q-commentaire').value,statut:'en-attente',validateur:'',createdAt:new Date().toISOString()});
+  addLog('QUOTAS','Ajout livraison',currentUser.username,`${membreNom} — ${quantite}`);showToast('Livraison enregistrée','success');closeModal('modal-quota');renderQuotas();
+}
+
+async function validerQuota(id,statut){
+  const q=await dbGet(STORES.quotas,id);q.statut=statut;q.validateur=currentUser.username;q.validatedAt=new Date().toISOString();
+  await dbPut(STORES.quotas,q);addLog('QUOTAS',`Quota ${statut}`,currentUser.username,q.membreNom);showToast(`Quota ${statut==='valide'?'validé':'refusé'}`,statut==='valide'?'success':'warning');renderQuotas();
+}
+
+/* ══════════════════════════════════════════════════════
+   TRÉSORERIE
+══════════════════════════════════════════════════════ */
+async function renderTresorerie(){
+  const transactions=await dbGetAll(STORES.transactions);
+  const totalIn=transactions.filter(t=>t.type==='entree').reduce((s,t)=>s+t.montant,0);
+  const totalOut=transactions.filter(t=>t.type==='sortie').reduce((s,t)=>s+t.montant,0);
+  const solde=totalIn-totalOut;
+  const now=new Date();const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+  const txM=transactions.filter(t=>new Date(t.date)>=monthStart);
+  const revM=txM.filter(t=>t.type==='entree').reduce((s,t)=>s+t.montant,0);
+  const depM=txM.filter(t=>t.type==='sortie').reduce((s,t)=>s+t.montant,0);
+  document.getElementById('treasury-stats').innerHTML=`
+    <div class="stat-card gold"><div class="stat-icon">💰</div><div class="stat-label">Solde actuel</div><div class="stat-value">$${fmt(solde)}</div></div>
+    <div class="stat-card green"><div class="stat-icon">📈</div><div class="stat-label">Total entrées</div><div class="stat-value">$${fmt(totalIn)}</div></div>
+    <div class="stat-card red"><div class="stat-icon">📉</div><div class="stat-label">Total sorties</div><div class="stat-value">$${fmt(totalOut)}</div></div>
+    <div class="stat-card blue"><div class="stat-icon">📅</div><div class="stat-label">Revenus ce mois</div><div class="stat-value">$${fmt(revM)}</div></div>
+    <div class="stat-card silver"><div class="stat-icon">📅</div><div class="stat-label">Dépenses ce mois</div><div class="stat-value">$${fmt(depM)}</div></div>`;
+  const cats=[...new Set(transactions.map(t=>t.categorie))];
+  const fc=document.getElementById('filter-treso-cat');const cc=fc.value;
+  fc.innerHTML='<option value="">Toutes catégories</option>'+cats.map(c=>`<option value="${c}"${cc===c?' selected':''}>${c}</option>`).join('');
+  const search=document.getElementById('search-treso').value.toLowerCase();
+  const typeF=document.getElementById('filter-treso-type').value;const catF=fc.value;
+  let filtered=transactions.filter(t=>(!search||(t.description.toLowerCase().includes(search)||t.categorie.toLowerCase().includes(search)))&&(!typeF||t.type===typeF)&&(!catF||t.categorie===catF)).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  document.getElementById('tbody-treso').innerHTML=filtered.length?filtered.map(t=>`<tr>
+    <td class="td-mono">${t.num||'—'}</td><td class="td-mono">${t.date}</td>
+    <td><span class="badge ${t.type==='entree'?'badge-green':'badge-red'}">${t.type==='entree'?'Entrée':'Sortie'}</span></td>
+    <td><span class="badge badge-silver">${t.categorie}</span>${t.isAutomatic?'<span style="font-size:10px;color:var(--gold2);margin-left:4px;font-family:var(--font-heading)">AUTO</span>':''}</td>
+    <td style="color:var(--text2)">${t.description}</td>
+    <td class="${t.type==='entree'?'amount-in':'amount-out'}" style="font-family:var(--font-title);font-size:16px">${t.type==='entree'?'+':'-'}$${fmt(t.montant)}</td>
+    <td style="color:var(--text3);font-size:12px">${t.auteur||'—'}</td>
+    <td>${!t.isAutomatic?`<button class="btn btn-danger btn-xs" onclick="confirmDelete('transaction',${t.id})">🗑️</button>`:'<span style="color:var(--text3);font-size:11px">AUTO</span>'}</td></tr>`).join(''):`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">💰</div>Aucune transaction</div></td></tr>`;
+}
+
+async function openTransactionModal(){
+  document.getElementById('t-date').value=fmtDate(new Date());document.getElementById('t-id').value='';document.getElementById('t-montant').value='';document.getElementById('t-description').value='';
+  openModal('modal-transaction');
+}
+
+async function saveTransaction(){
+  const montant=parseInt(document.getElementById('t-montant').value);const desc=document.getElementById('t-description').value.trim();const date=document.getElementById('t-date').value;
+  if(!montant||!desc||!date){showToast('Remplissez tous les champs','error');return;}
+  const all=await dbGetAll(STORES.transactions);const num='TRX-'+String(all.length+1).padStart(3,'0');
+  await dbAdd(STORES.transactions,{num,date,type:document.getElementById('t-type').value,categorie:document.getElementById('t-categorie').value,description:desc,montant,auteur:currentUser.username,isAutomatic:false,createdAt:new Date().toISOString()});
+  addLog('TRESORERIE','Nouvelle transaction',currentUser.username,`${desc} — $${fmt(montant)}`);showToast('Transaction enregistrée','success');closeModal('modal-transaction');renderTresorerie();
+}
+
+/* ══════════════════════════════════════════════════════
+   ACHATS / VENTES (Factures AV)
+══════════════════════════════════════════════════════ */
+async function renderFacturesAV(){
+  const facturesAV=await dbGetAll(STORES.facturesAV);
+  const totalAchat=facturesAV.filter(f=>f.type==='achat').reduce((s,f)=>s+f.prixRevient,0);
+  const totalVente=facturesAV.filter(f=>f.type==='vente'&&f.statut==='paye').reduce((s,f)=>s+f.prixVente,0);
+  const totalBenefice=facturesAV.filter(f=>f.type==='vente'&&f.statut==='paye').reduce((s,f)=>s+f.benefice,0);
+  const enAttente=facturesAV.filter(f=>f.statut==='non-paye').length;
+  document.getElementById('fav-stats').innerHTML=`
+    <div class="stat-card red"><div class="stat-icon">🛒</div><div class="stat-label">Total achats</div><div class="stat-value">$${fmt(totalAchat)}</div><div class="stat-change">${facturesAV.filter(f=>f.type==='achat').length} achats</div></div>
+    <div class="stat-card blue"><div class="stat-icon">💸</div><div class="stat-label">Total ventes</div><div class="stat-value">$${fmt(totalVente)}</div><div class="stat-change">${facturesAV.filter(f=>f.type==='vente').length} ventes</div></div>
+    <div class="stat-card green"><div class="stat-icon">📊</div><div class="stat-label">Bénéfice net</div><div class="stat-value">$${fmt(totalBenefice)}</div><div class="stat-change up">↑ Ajouté à la tréso</div></div>
+    <div class="stat-card orange"><div class="stat-icon">⏳</div><div class="stat-label">En attente</div><div class="stat-value">${enAttente}</div></div>`;
+  const search=document.getElementById('search-fav').value.toLowerCase();
+  const sf=document.getElementById('filter-fav-statut').value;
+  let filtered=facturesAV.filter(f=>{
+    const matchTab=favTabFilter==='all'||f.type===favTabFilter;
+    const matchSearch=!search||(f.article.toLowerCase().includes(search)||f.categorie.toLowerCase().includes(search));
+    const matchStatut=!sf||f.statut===sf;
+    return matchTab&&matchSearch&&matchStatut;
+  }).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  document.getElementById('tbody-fav').innerHTML=filtered.length?filtered.map(f=>{
+    const benefice=f.type==='vente'?f.benefice:0;
+    const bclass=benefice>0?'profit-pos':'profit-neg';
+    return `<tr>
+      <td class="td-mono">${f.num||'—'}</td>
+      <td><span class="badge ${f.type==='achat'?'badge-red':'badge-green'}">${f.type==='achat'?'🛒 Achat':'💸 Vente'}</span></td>
+      <td class="td-mono">${f.date}</td>
+      <td style="color:var(--text);font-weight:600">${f.article}</td>
+      <td><span class="badge badge-silver">${f.categorie}</span></td>
+      <td style="color:var(--red2);font-family:var(--font-title);font-size:15px">$${fmt(f.prixRevient)}</td>
+      <td style="color:var(--text2);font-family:var(--font-title);font-size:15px">${f.prixVente?'$'+fmt(f.prixVente):'—'}</td>
+      <td>${f.type==='vente'?`<span class="profit-badge ${bclass}">$${fmt(benefice)}</span>`:'—'}</td>
+      <td><span class="badge ${f.statut==='paye'?'badge-green':'badge-gold'}">${f.statut==='paye'?'Payé(e)':'En attente'}</span>${f.tresoAdded?'<span style="font-size:10px;color:var(--green2);margin-left:4px;font-family:var(--font-heading)">✅TRÉSO</span>':''}</td>
+      <td><div style="display:flex;gap:4px">
+        ${f.statut==='non-paye'?`<button class="btn btn-success btn-xs" onclick="marquerFavPaye(${f.id})">✅</button>`:''}
+        <button class="btn btn-danger btn-xs" onclick="confirmDelete('factureAV',${f.id})">🗑️</button>
+      </div></td></tr>`;
+  }).join(''):`<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">🧾</div>Aucune entrée trouvée</div></td></tr>`;
+}
+
+function updateFavForm(){
+  const type=document.getElementById('fav-type').value;
+  const pvGroup=document.getElementById('fav-prix-vente-group');
+  const autoInfo=document.getElementById('fav-auto-treso-info');
+  pvGroup.style.display=type==='vente'?'':'none';
+  autoInfo.style.display=type==='vente'?'block':'none';
+  calcBenefice();
+}
+
+function calcBenefice(){
+  const type=document.getElementById('fav-type').value;
+  const pr=parseFloat(document.getElementById('fav-prix-revient').value)||0;
+  const pv=parseFloat(document.getElementById('fav-prix-vente').value)||0;
+  const preview=document.getElementById('fav-benefice-preview');
+  if(type==='vente'&&(pr>0||pv>0)){
+    const benef=pv-pr;
+    preview.style.display='block';
+    preview.style.background=benef>=0?'rgba(39,174,96,.1)':'rgba(192,57,43,.1)';
+    preview.style.border=`1px solid ${benef>=0?'rgba(39,174,96,.4)':'rgba(192,57,43,.4)'}`;
+    preview.style.color=benef>=0?'var(--green2)':'var(--red2)';
+    preview.innerHTML=`📊 Bénéfice estimé : <strong>$${fmt(benef)}</strong> &nbsp;|&nbsp; Marge : <strong>${pr>0?Math.round(benef/pr*100):0}%</strong>${benef>0?' &nbsp;→ sera ajouté automatiquement à la trésorerie':''}`;
+  } else {preview.style.display='none';}
+}
+
+async function openFactureAVModal(id=null){
+  document.getElementById('fav-date').value=fmtDate(new Date());
+  document.getElementById('fav-id').value='';document.getElementById('fav-article').value='';
+  document.getElementById('fav-prix-revient').value='';document.getElementById('fav-prix-vente').value='';document.getElementById('fav-notes').value='';
+  document.getElementById('fav-type').value='achat';document.getElementById('fav-statut').value='paye';
+  document.getElementById('modal-fav-title').textContent='Nouvelle facture achat/vente';
+  updateFavForm();
+  openModal('modal-fav');
+}
+
+async function saveFactureAV(){
+  const type=document.getElementById('fav-type').value;
+  const article=document.getElementById('fav-article').value.trim();
+  const date=document.getElementById('fav-date').value;
+  const pr=parseFloat(document.getElementById('fav-prix-revient').value)||0;
+  const pv=type==='vente'?parseFloat(document.getElementById('fav-prix-vente').value)||0:0;
+  const statut=document.getElementById('fav-statut').value;
+  if(!article||!date){showToast('Remplissez les champs requis','error');return;}
+  const benefice=type==='vente'?pv-pr:0;
+  const all=await dbGetAll(STORES.facturesAV);const num='FAV-'+String(all.length+1).padStart(3,'0');
+  const fav={num,type,categorie:document.getElementById('fav-categorie').value,article,date,prixRevient:pr,prixVente:pv,benefice,statut,notes:document.getElementById('fav-notes').value,tresoAdded:false,createdAt:new Date().toISOString()};
+  const favId=await dbAdd(STORES.facturesAV,fav);
+
+  // Si vente payée avec bénéfice positif → ajout automatique trésorerie
+  if(type==='vente'&&statut==='paye'&&benefice>0){
+    const allTx=await dbGetAll(STORES.transactions);
+    const txNum='TRX-AUTO-'+String(allTx.length+1).padStart(3,'0');
+    await dbAdd(STORES.transactions,{num:txNum,date,type:'entree',categorie:'Bénéfice vente',description:`Bénéfice: ${article}`,montant:benefice,auteur:'Système',isAutomatic:true,favId,createdAt:new Date().toISOString()});
+    // Marquer tresoAdded
+    const saved=await dbGet(STORES.facturesAV,favId);saved.tresoAdded=true;await dbPut(STORES.facturesAV,saved);
+    showToast(`Bénéfice $${fmt(benefice)} ajouté à la trésorerie !`,'success',5000);
+    addLog('TRESO_AUTO',`Bénéfice auto: ${article}`,currentUser.username,`$${fmt(benefice)}`);
+  }
+
+  addLog('FACTURES_AV',`Nouvelle ${type}`,currentUser.username,`${article} — $${fmt(type==='vente'?pv:pr)}`);
+  showToast(`${type==='achat'?'Achat':'Vente'} enregistré(e)`,'success');
+  closeModal('modal-fav');renderFacturesAV();
+}
+
+async function marquerFavPaye(id){
+  const f=await dbGet(STORES.facturesAV,id);f.statut='paye';f.payeeAt=new Date().toISOString();
+  await dbPut(STORES.facturesAV,f);
+  // Si c'est une vente avec bénéfice et pas encore ajouté à la tréso
+  if(f.type==='vente'&&f.benefice>0&&!f.tresoAdded){
+    const allTx=await dbGetAll(STORES.transactions);
+    const txNum='TRX-AUTO-'+String(allTx.length+1).padStart(3,'0');
+    await dbAdd(STORES.transactions,{num:txNum,date:f.payeeAt.split('T')[0],type:'entree',categorie:'Bénéfice vente',description:`Bénéfice: ${f.article}`,montant:f.benefice,auteur:'Système',isAutomatic:true,favId:id,createdAt:new Date().toISOString()});
+    f.tresoAdded=true;await dbPut(STORES.facturesAV,f);
+    showToast(`Bénéfice $${fmt(f.benefice)} ajouté à la trésorerie !`,'success',5000);
+  }
+  addLog('FACTURES_AV','Marqué payé',currentUser.username,f.article);showToast('Marqué payé','success');renderFacturesAV();
+}
+
+/* ══════════════════════════════════════════════════════
+   BUDGETS
+══════════════════════════════════════════════════════ */
+async function renderBudgets(){
+  const budgets=await dbGetAll(STORES.budgets);
+  document.getElementById('budgets-grid').innerHTML=budgets.length?budgets.map(b=>{
+    const pct=Math.min(100,Math.round(b.montantUtilise/b.montantPrevu*100));
+    return `<div class="budget-card">
+      <div class="budget-name">${b.icon||'📋'} ${b.nom}</div>
+      <div class="budget-amount">$${fmt(b.montantPrevu)}</div>
+      <div class="budget-used">Utilisé : $${fmt(b.montantUtilise)} (${pct}%)</div>
+      <div class="progress-wrap mb-1"><div class="progress-bar" style="width:${pct}%;background:${pct>=90?'var(--red)':pct>=70?'var(--orange)':'var(--green)'}"></div></div>
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button class="btn btn-secondary btn-xs" onclick="openBudgetModal(${b.id})">✏️ Éditer</button>
+        <button class="btn btn-danger btn-xs" onclick="confirmDelete('budget',${b.id})">🗑️</button>
+      </div></div>`;}).join(''):`<div class="empty-state"><div class="empty-icon">📋</div>Aucun budget</div>`;
+}
+
+async function openBudgetModal(id=null){
+  if(id){const b=await dbGet(STORES.budgets,id);document.getElementById('modal-budget-title').textContent='Modifier';document.getElementById('b-id').value=b.id;document.getElementById('b-nom').value=b.nom;document.getElementById('b-icon').value=b.icon||'';document.getElementById('b-montant').value=b.montantPrevu;document.getElementById('b-utilise').value=b.montantUtilise;}
+  else{document.getElementById('modal-budget-title').textContent='Nouveau budget';document.getElementById('b-id').value='';document.getElementById('b-nom').value='';document.getElementById('b-icon').value='';document.getElementById('b-montant').value='';document.getElementById('b-utilise').value='0';}
+  openModal('modal-budget');
+}
+
+async function saveBudget(){
+  const nom=document.getElementById('b-nom').value.trim();const montant=parseFloat(document.getElementById('b-montant').value);
+  if(!nom||!montant){showToast('Nom et montant requis','error');return;}
+  const obj={nom,icon:document.getElementById('b-icon').value||'📋',montantPrevu:montant,montantUtilise:parseFloat(document.getElementById('b-utilise').value)||0};
+  const eid=document.getElementById('b-id').value;
+  if(eid){obj.id=parseInt(eid);await dbPut(STORES.budgets,obj);showToast('Budget modifié','success');}
+  else{await dbAdd(STORES.budgets,obj);showToast('Budget créé','success');}
+  closeModal('modal-budget');renderBudgets();
+}
+
+/* ══════════════════════════════════════════════════════
+   COTISATIONS
+══════════════════════════════════════════════════════ */
+async function renderCotisations(){
+  const [cotisations,membres,params]=await Promise.all([dbGetAll(STORES.cotisations),dbGetAll(STORES.membres),dbGet(STORES.params,1)]);
+  const total=cotisations.filter(c=>c.statut==='paye').reduce((s,c)=>s+c.montant,0);
+  const attente=cotisations.filter(c=>c.statut==='en-attente').length;const retard=cotisations.filter(c=>c.statut==='retard').length;
+  document.getElementById('cotis-stats').innerHTML=`
+    <div class="stat-card gold"><div class="stat-icon">💳</div><div class="stat-label">Total perçu</div><div class="stat-value">$${fmt(total)}</div></div>
+    <div class="stat-card orange"><div class="stat-icon">⏳</div><div class="stat-label">En attente</div><div class="stat-value">${attente}</div></div>
+    <div class="stat-card red"><div class="stat-icon">⚠️</div><div class="stat-label">En retard</div><div class="stat-value">${retard}</div></div>`;
+  document.getElementById('tbody-cotisations').innerHTML=cotisations.length?[...cotisations].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(c=>`<tr>
+    <td style="color:var(--text);font-weight:600">${c.membreNom||'—'}</td>
+    <td style="font-family:var(--font-title);font-size:16px;color:var(--gold2)">$${fmt(c.montant)}</td>
+    <td class="td-mono">${c.date}</td>
+    <td><span class="badge ${c.statut==='paye'?'badge-green':c.statut==='retard'?'badge-red':'badge-gold'}">${c.statut}</span></td>
+    <td style="color:var(--text3);font-size:12px">${c.notes||'—'}</td>
+    <td><button class="btn btn-danger btn-xs" onclick="confirmDelete('cotisation',${c.id})">🗑️</button></td></tr>`).join(''):`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">💳</div>Aucune cotisation</div></td></tr>`;
+}
+
+async function openCotisationModal(){
+  const membres=await dbGetAll(STORES.membres);const params=await dbGet(STORES.params,1);
+  document.getElementById('c-membre').innerHTML=membres.filter(m=>m.statut==='actif').map(m=>`<option value="${m.id}" data-nom="${m.nom}">${m.nom}</option>`).join('');
+  document.getElementById('c-date').value=fmtDate(new Date());document.getElementById('c-montant').value=params?.cotisAmount||5000;document.getElementById('c-notes').value='';document.getElementById('c-id').value='';
+  openModal('modal-cotisation');
+}
+
+async function saveCotisation(){
+  const mEl=document.getElementById('c-membre');const membreId=parseInt(mEl.value);const membreNom=mEl.options[mEl.selectedIndex]?.dataset.nom||'';
+  const montant=parseFloat(document.getElementById('c-montant').value);const date=document.getElementById('c-date').value;
+  if(!membreId||!montant||!date){showToast('Remplissez tous les champs','error');return;}
+  const obj={membreId,membreNom,montant,date,statut:document.getElementById('c-statut').value,notes:document.getElementById('c-notes').value,createdAt:new Date().toISOString()};
+  const eid=document.getElementById('c-id').value;
+  if(eid){obj.id=parseInt(eid);await dbPut(STORES.cotisations,obj);}
+  else{await dbAdd(STORES.cotisations,obj);}
+  if(obj.statut==='paye'){
+    const all=await dbGetAll(STORES.transactions);const num='TRX-'+String(all.length+1).padStart(3,'0');
+    await dbAdd(STORES.transactions,{num,date,type:'entree',categorie:'Cotisations',description:`Cotisation: ${membreNom}`,montant,auteur:currentUser.username,isAutomatic:false,createdAt:new Date().toISOString()});
+  }
+  addLog('COTISATIONS','Enregistrement',currentUser.username,`${membreNom} — $${fmt(montant)}`);showToast('Cotisation enregistrée','success');closeModal('modal-cotisation');renderCotisations();
+}
+
+/* ══════════════════════════════════════════════════════
+   LOGS
+══════════════════════════════════════════════════════ */
+async function renderLogs(){
+  const logs=await dbGetAll(STORES.logs);const search=document.getElementById('search-logs').value.toLowerCase();
+  const filtered=[...logs].reverse().filter(l=>!search||(l.action+l.detail+l.user+l.extra).toLowerCase().includes(search));
+  document.getElementById('logs-list').innerHTML=filtered.length?filtered.map(l=>`
+    <div class="log-entry">
+      <div class="log-time">${new Date(l.ts).toLocaleString('fr-FR')}</div>
+      <div class="log-action">[${l.action}]</div>
+      <div class="log-user">${l.user}</div>
+      <div class="log-detail">${l.detail} ${l.extra?'— '+l.extra:''}</div>
+    </div>`).join(''):`<div class="empty-state"><div class="empty-icon">📝</div>Aucun log</div>`;
+}
+
+function clearLogs(){confirmAction('Vider tous les logs ?',async()=>{await dbClear(STORES.logs);renderLogs();showToast('Logs vidés','success');});}
+
+/* ══════════════════════════════════════════════════════
+   PARAMÈTRES + CHANGEMENT MOT DE PASSE (code 2008)
+══════════════════════════════════════════════════════ */
+async function renderParametres(){
+  const params=await dbGet(STORES.params,1);
+  if(params){document.getElementById('param-club-name').value=params.clubName||'Lost MC';document.getElementById('param-quota-min').value=params.quotaMin||100;document.getElementById('param-cotis-amount').value=params.cotisAmount||5000;}
+  const users=await dbGetAll(STORES.users);
+  const grades=await dbGetAll(STORES.grades);
+  document.getElementById('tbody-users').innerHTML=users.sort((a,b)=>(b.gradeNiveau||0)-(a.gradeNiveau||0)).map(u=>`<tr>
+    <td style="color:var(--text)">${u.grade||'—'}</td>
+    <td><code style="color:var(--gold2);font-family:'Courier New';background:var(--dark3);padding:2px 8px;border-radius:3px">${u.username}</code></td>
+    <td><code style="color:var(--silver2);font-family:'Courier New';background:var(--dark3);padding:2px 8px;border-radius:3px">${u.plainPassword||'••••••••'}</code></td>
+    <td><span class="badge ${u.gradeCategorie==='haut-grade'?'badge-gold':'badge-silver'}">${u.gradeCategorie||'membre'}</span>${u.financeAccess?'<span class="badge badge-green ml-1" style="margin-left:4px">💰</span>':''}</td>
+    <td style="color:var(--text3);font-size:12px">${u.lastLogin?new Date(u.lastLogin).toLocaleString('fr-FR'):'Jamais'}</td>
+    <td><button class="btn btn-danger btn-xs" onclick="confirmDelete('user',${u.id})">🗑️</button></td></tr>`).join('');
+  const txCount=await dbGetAll(STORES.transactions);const mCount=await dbGetAll(STORES.membres);const lCount=await dbGetAll(STORES.logs);
+  document.getElementById('sys-info').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;font-family:var(--font-heading);font-size:13px;letter-spacing:1px">
+      <div style="color:var(--text2)">Version : <span style="color:var(--gold2)">2.0.0</span></div>
+      <div style="color:var(--text2)">Base de données : <span style="color:var(--green2)">IndexedDB</span></div>
+      <div style="color:var(--text2)">Membres : <span style="color:var(--text)">${mCount.length}</span></div>
+      <div style="color:var(--text2)">Transactions : <span style="color:var(--text)">${txCount.length}</span></div>
+      <div style="color:var(--text2)">Logs : <span style="color:var(--text)">${lCount.length}</span></div>
+      <div style="color:var(--text2)">Autosave : <span style="color:var(--green2)">Toutes les 2 min</span></div>
+      <div style="color:var(--text2)">Utilisateur : <span style="color:var(--text)">${currentUser?.username}</span></div>
+    </div>`;
+}
+
+function unlockPasswordChange(){
+  const code=document.getElementById('unlock-code').value.trim();
+  if(code==='2008'){
+    document.getElementById('change-pass-section').style.display='block';
+    document.getElementById('unlock-code').value='';
+    showToast('✅ Changement de mot de passe débloqué','success');
+    addLog('SÉCURITÉ','Code 2008 utilisé',currentUser.username,'');
+  } else {
+    showToast('Code incorrect','error');
+    addLog('SÉCURITÉ','Tentative code changement MDP échouée',currentUser.username,'');
+  }
+}
+
+async function changePassword(){
+  const p1=document.getElementById('new-pass-1').value;const p2=document.getElementById('new-pass-2').value;
+  if(!p1){showToast('Entrez un mot de passe','error');return;}
+  if(p1!==p2){showToast('Les mots de passe ne correspondent pas','error');return;}
+  if(p1.length<4){showToast('Mot de passe trop court (min. 4 caractères)','error');return;}
+  const user=await dbGet(STORES.users,currentUser.id);
+  user.password=btoa(p1);user.plainPassword=p1;
+  await dbPut(STORES.users,user);currentUser=user;
+  document.getElementById('new-pass-1').value='';document.getElementById('new-pass-2').value='';
+  document.getElementById('change-pass-section').style.display='none';
+  showToast('Mot de passe changé avec succès !','success');
+  addLog('SÉCURITÉ','Changement de mot de passe',currentUser.username,'');
+}
+
+async function saveParams(){
+  const obj={id:1,clubName:document.getElementById('param-club-name').value,quotaMin:parseInt(document.getElementById('param-quota-min').value)||100,cotisAmount:parseInt(document.getElementById('param-cotis-amount').value)||5000};
+  await dbPut(STORES.params,obj);showToast('Paramètres sauvegardés','success');addLog('PARAMS','Mise à jour paramètres',currentUser.username,'');
+}
+
+async function openCreateUserModal(){
+  const grades=await dbGetAll(STORES.grades);
+  document.getElementById('cu-grade').innerHTML=grades.sort((a,b)=>b.niveau-a.niveau).map(g=>`<option value="${g.nom}" data-niveau="${g.niveau}" data-cat="${g.categorie}" data-fin="${g.financeAccess?1:0}">${g.nom}</option>`).join('');
+  document.getElementById('cu-user').value='';document.getElementById('cu-pass').value='';
+  openModal('modal-create-user');
+}
+
+async function createUser(){
+  const username=document.getElementById('cu-user').value.trim();const password=document.getElementById('cu-pass').value;
+  const sel=document.getElementById('cu-grade');const grade=sel.value;
+  const opt=sel.options[sel.selectedIndex];
+  if(!username||!password){showToast('Remplissez tous les champs','error');return;}
+  const users=await dbGetAll(STORES.users);
+  if(users.find(u=>u.username===username)){showToast('Ce nom d\'utilisateur existe déjà','error');return;}
+  await dbAdd(STORES.users,{username,password:btoa(password),plainPassword:password,grade,gradeNiveau:parseInt(opt.dataset.niveau)||1,gradeCategorie:opt.dataset.cat||'membre',financeAccess:opt.dataset.fin==='1',isSystemAccount:false,createdAt:new Date().toISOString(),lastLogin:null});
+  addLog('USERS','Création compte',currentUser.username,username);showToast('Compte créé','success');closeModal('modal-create-user');renderParametres();
+}
+
+/* ══════════════════════════════════════════════════════
+   EXPORT EXCEL
+══════════════════════════════════════════════════════ */
+function toExcelSheet(data,headers,keys){
+  const ws={};const range={s:{c:0,r:0},e:{c:headers.length-1,r:data.length}};
+  headers.forEach((h,c)=>{ws[XLSX.utils.encode_cell({r:0,c})]=({v:h,t:'s',s:{font:{bold:true}}});});
+  data.forEach((row,r)=>{keys.forEach((k,c)=>{const val=row[k]??'';ws[XLSX.utils.encode_cell({r:r+1,c})]=({v:val,t:'s'});});});
+  ws['!ref']=XLSX.utils.encode_range(range);return ws;
+}
+
+async function exportMembresExcel(){
+  const membres=await dbGetAll(STORES.membres);
+  const ws=toExcelSheet(membres,['Nom','Grade','Niveau','Statut','Date entrée','Notes'],['nom','grade','gradeNiveau','statut','dateEntree','notes']);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Membres');
+  XLSX.writeFile(wb,'LostMC_Membres.xlsx');showToast('Export Excel membres ok','success');
+}
+
+async function exportQuotasExcel(){
+  const quotas=await dbGetAll(STORES.quotas);
+  const ws=toExcelSheet(quotas,['Membre','Type','Quantité','Date','Statut','Commentaire'],['membreNom','type','quantite','date','statut','commentaire']);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Quotas');
+  XLSX.writeFile(wb,'LostMC_Quotas.xlsx');showToast('Export Excel quotas ok','success');
+}
+
+async function exportTresoExcel(){
+  const txs=await dbGetAll(STORES.transactions);
+  const ws=toExcelSheet(txs,['Numéro','Date','Type','Catégorie','Description','Montant','Auteur','Automatique'],['num','date','type','categorie','description','montant','auteur','isAutomatic']);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Trésorerie');
+  XLSX.writeFile(wb,'LostMC_Tresorerie.xlsx');showToast('Export Excel trésorerie ok','success');
+}
+
+async function exportFacturesExcel(){
+  const favs=await dbGetAll(STORES.facturesAV);
+  const ws=toExcelSheet(favs,['Numéro','Type','Catégorie','Article','Date','P. Revient','P. Vente','Bénéfice','Statut','Notes'],['num','type','categorie','article','date','prixRevient','prixVente','benefice','statut','notes']);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Achats-Ventes');
+  XLSX.writeFile(wb,'LostMC_FacturesAV.xlsx');showToast('Export Excel factures ok','success');
+}
+
+async function exportCotisExcel(){
+  const cotis=await dbGetAll(STORES.cotisations);
+  const ws=toExcelSheet(cotis,['Membre','Montant','Date','Statut','Notes'],['membreNom','montant','date','statut','notes']);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Cotisations');
+  XLSX.writeFile(wb,'LostMC_Cotisations.xlsx');showToast('Export Excel cotisations ok','success');
+}
+
+async function exportAllExcel(){
+  const wb=XLSX.utils.book_new();
+  const membres=await dbGetAll(STORES.membres);
+  const txs=await dbGetAll(STORES.transactions);
+  const quotas=await dbGetAll(STORES.quotas);
+  const favs=await dbGetAll(STORES.facturesAV);
+  const cotis=await dbGetAll(STORES.cotisations);
+  const budgets=await dbGetAll(STORES.budgets);
+  XLSX.utils.book_append_sheet(wb,toExcelSheet(membres,['Nom','Grade','Niveau','Statut','Date entrée'],['nom','grade','gradeNiveau','statut','dateEntree']),'Membres');
+  XLSX.utils.book_append_sheet(wb,toExcelSheet(txs,['N°','Date','Type','Catégorie','Description','Montant','Auteur'],['num','date','type','categorie','description','montant','auteur']),'Trésorerie');
+  XLSX.utils.book_append_sheet(wb,toExcelSheet(quotas,['Membre','Type','Quantité','Date','Statut'],['membreNom','type','quantite','date','statut']),'Quotas');
+  XLSX.utils.book_append_sheet(wb,toExcelSheet(favs,['N°','Type','Article','P.Revient','P.Vente','Bénéfice','Statut'],['num','type','article','prixRevient','prixVente','benefice','statut']),'Achats-Ventes');
+  XLSX.utils.book_append_sheet(wb,toExcelSheet(cotis,['Membre','Montant','Date','Statut'],['membreNom','montant','date','statut']),'Cotisations');
+  XLSX.utils.book_append_sheet(wb,toExcelSheet(budgets,['Nom','Prévu','Utilisé'],['nom','montantPrevu','montantUtilise']),'Budgets');
+  XLSX.writeFile(wb,'LostMC_Export_Complet.xlsx');showToast('Export complet terminé !','success');
+  addLog('EXPORT','Export Excel global',currentUser.username,'');
+}
+
+/* ══════════════════════════════════════════════════════
+   IMPORT / EXPORT JSON + RESET
+══════════════════════════════════════════════════════ */
+async function exportData(){
+  const all={};
+  for(const s of Object.values(STORES)){all[s]=await dbGetAll(s);}
+  const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),data:all},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='LostMC_backup.json';a.click();
+  showToast('Export JSON terminé','success');addLog('EXPORT','Export JSON',currentUser.username,'');
+}
+
+async function importData(input){
+  const file=input.files[0];if(!file)return;
+  const text=await file.text();
+  try{
+    const json=JSON.parse(text);const data=json.data||json;
+    for(const[s,records]of Object.entries(data)){
+      if(STORES[s]||Object.values(STORES).includes(s)){
+        const storeName=Object.values(STORES).includes(s)?s:STORES[s];
+        await dbClear(storeName);
+        for(const r of records)await dbAdd(storeName,r);
+      }
+    }
+    showToast('Import réussi !','success');addLog('IMPORT','Import JSON',currentUser.username,'');
+    loadPage(currentPage);
+  }catch(e){showToast('Erreur import: '+e.message,'error');}
+  input.value='';
+}
+
+function resetDB(){
+  confirmAction('⚠️ Réinitialiser TOUTES les données ? Cette action est irréversible !',async()=>{
+    for(const s of Object.values(STORES))await dbClear(s);
+    localStorage.removeItem('lostmc_backup');
+    showToast('Base réinitialisée — rechargez la page','warning');
+    setTimeout(()=>location.reload(),2000);
+  });
+}
+
+/* ══════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════ */
+let currentPage='dashboard';
+
+async function initApp(){
+  await loadUserPermissions();
+  startClock();
+  startAutosave();
+  renderDashboard();
+}
+
+async function main(){
+  await initDB();
+  await seedDefaultData();
+  document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  // Show first set of credentials as hint (dev mode)
+  console.log('🏍️ Lost MC System v2.0 — Connectez-vous avec admin/admin123 ou tresorier/tresorier123');
+}
+
+main().catch(console.error);
+</script>
+</body>
+</html>
